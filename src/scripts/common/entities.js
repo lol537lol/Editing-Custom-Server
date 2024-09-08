@@ -13,7 +13,7 @@ const rect_1 = require("./rect");
 const ponyInfo_1 = require("./ponyInfo");
 const entities = [];
 function createBaseEntity(type, id, x, y) {
-    return { id, type, x, y, z: 0, vx: 0, vy: 0, order: 0, state: 0, playerState: 0, flags: 0, timestamp: 0 };
+    return { id, type, x, y, z: 0, vx: 0, vy: 0, depth: 0, order: 0, state: 0, playerState: 0, flags: 0, timestamp: 0 };
 }
 exports.createBaseEntity = createBaseEntity;
 function createEntity(type, id, x, y, options, worldState) {
@@ -114,15 +114,18 @@ function mixOrder(order) {
     return base => base.order = order;
 }
 const collectableInteractive = mixins_1.mixInteract(-8, -12, 16, 16, 1.5);
+// entity with centered sprite and larger clickable area
 function collectable(name, sprite, paletteIndex = 0, ...other) {
     return doodad(name, sprite, Math.floor(sprite.color.w / 2), sprite.color.h - 1, paletteIndex, collectableInteractive, ...other);
 }
+// for ground details. puts origin point on the top of sprite, so you always go on top of it. collectables are able to spawn overlapping decals
 function decal(name, sprite, palette = 0, ...other) {
     return registerMix(name, mixins_1.mixDraw(sprite, Math.floor((sprite.color.w + sprite.color.ox) / 2), sprite.color.oy, palette), mixFlags(2 /* Decal */), ...other);
 }
 function decalOffset(name, sprite, dx, dy, palette = 0, ...other) {
     return registerMix(name, mixins_1.mixDraw(sprite, dx, dy, palette), mixFlags(2 /* Decal */), ...other);
 }
+// for decorative objects
 function doodad(name, sprite, ox, oy, palatte = 0, ...other) {
     return registerMix(name, mixins_1.mixDraw(sprite, ox, oy, palatte), ...lodash_1.compact(other));
 }
@@ -210,6 +213,14 @@ exports.banana = collectable(n('banana'), sprites.banana, 0, mixins_1.mixPickabl
 const lemonPickable = mixins_1.mixPickable(31, 45);
 exports.lemon = collectable(n('lemon'), sprites.lemon_1, 0, lemonPickable);
 exports.lime = collectable(n('lime'), sprites.lemon_1, 1, lemonPickable);
+//грибы mushroom
+const mushroomPalette = 1;
+exports.mushroom1 = doodad(n('mushroom-1'), sprites.mushroom_1, 4, 9, mushroomPalette);
+exports.mushroom2 = doodad(n('mushroom-2'), sprites.mushroom_2, 4, 9, mushroomPalette);
+exports.mushroom3 = doodad(n('mushroom-3'), sprites.mushroom_3, 4, 9, mushroomPalette);
+exports.mushroom4 = doodad(n('mushroom-4'), sprites.mushroom_4, 4, 9, mushroomPalette);
+exports.mushroom5 = doodad(n('mushroom-5'), sprites.mushroom_5, 4, 9, mushroomPalette);
+//carrot основа
 const carrotPalette = 1;
 exports.carrot1 = doodad(n('carrot-1'), sprites.carrot_1, 4, 9, carrotPalette, collectableInteractive);
 exports.carrot1b = doodad(n('carrot-1b'), sprites.carrot_1b, 4, 9, carrotPalette, collectableInteractive);
@@ -471,8 +482,6 @@ exports.rock3 = doodad(n('rock-3'), sprites.rock_3, 10, 11, 0, mixins_1.mixColli
 exports.rockB = doodad(n('rockb'), sprites.rock_1, 15, 20, 1, mixins_1.mixColliderRounded(-16, -12, 32, 12, 3, false), rockMinimap);
 exports.rock2B = doodad(n('rock-2b'), sprites.rock_2, 11, 11, 1, mixins_1.mixColliderRounded(-10, -4, 17, 5, 2, false), rockMinimap);
 exports.rock3B = doodad(n('rock-3b'), sprites.rock_3, 10, 11, 1, mixins_1.mixColliderRounded(-10, -4, 18, 5, 2, false), rockMinimap);
-// other
-exports.well = doodad(n('well'), sprites.well, 30, 67, 0, mixins_1.mixColliderRect(-26, -20, 54, 30));
 // water rocks
 const waterRockFPS = constants_1.WATER_FPS;
 exports.waterRock1 = registerMix(n('water-rock-1'), mixins_1.mixAnimation(sprites.water_rock_1, waterRockFPS, 10, 12), mixins_1.mixColliderRounded(-12, -6, 25, 7, 2, false), mixFlags(32 /* StaticY */));
@@ -653,15 +662,29 @@ exports.sandPileSmall = doodad(n('sandpile-small'), sprites.snowpile_small, 22, 
 exports.sandPileMedium = doodad(n('sandpile-medium'), sprites.snowpile_medium, 33, 20, 1, mixins_1.mixColliderRounded(-23, -4, 46, 12, 4, false));
 exports.sandPileBig = doodad(n('sandpile-big'), sprites.snowpile_big, 43, 28, 1, mixins_1.mixColliderRounded(-39, -2, 78, 16, 6, false));
 // pumpkins
+const pumpkinOffOnSprites = { frames: [sprites.pumpkin_off.color, sprites.pumpkin_on.color],
+    palette: sprites.pumpkin_on.palettes[0],
+    shadow: sprites.pumpkin_on.shadow };
+const pumpkinLightSprite = { frames: [undefined, sprites.pumpkin_light] };
 const pumpkinCollider = mixins_1.mixColliderRounded(-11, -6, 22, 12, 5, false);
 const pumpkinPickable = mixins_1.mixPickable(26, 50);
 const pumpkinParts = [pumpkinCollider, pumpkinPickable];
 const pumpkinDX = 11;
 const pumpkinDY = 15;
+const pumpkinAnimOff = [0];
+const pumpkinAnimOn = [1];
 exports.pumpkin = doodad(n('pumpkin'), sprites.pumpkin_default, pumpkinDX, pumpkinDY, 0, ...pumpkinParts);
 exports.jackoOff = doodad(n('jacko-off'), sprites.pumpkin_off, pumpkinDX, pumpkinDY, 0, ...pumpkinParts);
 exports.jackoOn = doodad(n('jacko-on'), sprites.pumpkin_on, pumpkinDX, pumpkinDY, 0, ...pumpkinParts, mixins_1.mixLight(jackoLightColor, 0, 0, 256, 192), mixins_1.mixLightSprite(sprites.pumpkin_light, colors_1.WHITE, pumpkinDX, pumpkinDY));
-exports.jacko = doodad(n('jacko'), sprites.pumpkin_on, pumpkinDX, pumpkinDY, 0, ...pumpkinParts, mixins_1.mixLight(jackoLightColor, 0, 0, 256, 192), mixins_1.mixLightSprite(sprites.pumpkin_light, colors_1.WHITE, pumpkinDX, pumpkinDY), mixFlags(1024 /* OnOff */));
+exports.jacko = registerMix(n('jacko'), mixins_1.mixAnimation(pumpkinOffOnSprites, 8, pumpkinDX, pumpkinDY, {
+    lightSprite: pumpkinLightSprite,
+    animations: [pumpkinAnimOff, pumpkinAnimOn],
+}), ...pumpkinParts, mixins_1.mixLight(jackoLightColor, 0, 0, 256, 192), mixFlags(1024 /* OnOff */));
+/*export const jacko = doodad(n('jacko'), sprites.pumpkin_on, pumpkinDX, pumpkinDY, 0,
+    ...pumpkinParts,
+    mixLight(jackoLightColor, 0, 0, 256, 192),
+    mixLightSprite(sprites.pumpkin_light, WHITE, pumpkinDX, pumpkinDY),
+    mixFlags(EntityFlags.OnOff));*/
 // tombstones
 exports.tombstone1 = doodad(n('tombstone-1'), sprites.tombstone_1, 14, 18, 0, mixins_1.mixColliderRect(-14, -4, 29, 9));
 exports.tombstone2 = doodad(n('tombstone-2'), sprites.tombstone_2, 11, 27, 0, mixins_1.mixColliderRect(-12, -3, 26, 6));
@@ -924,7 +947,7 @@ exports.ghostHooves1 = createGhostHooves(0);
 exports.ghostHooves2 = createGhostHooves(1);
 // clouds
 const cloudSprite = sprites.cloud.shadow;
-exports.cloud = registerMix(n('cloud'), mixins_1.mixDrawShadow(sprites.cloud, Math.floor(cloudSprite.w / 2), cloudSprite.h, colors_1.CLOUD_SHADOW_COLOR), mixFlags(2 /* Decal */ | 1 /* Movable */));
+exports.cloud = registerMix(n('cloud'), mixins_1.mixDrawShadow(sprites.cloud, Math.floor(cloudSprite.w / 2), cloudSprite.h, colors_1.CLOUD_SHADOW_COLOR), mixFlags(32 /* StaticY */ | 2 /* Decal */ | 1 /* Movable */));
 // vegetation
 const largeLeafedBushLarge = mixins_1.mixColliderRounded(-14, -6, 28, 12, 2, false);
 const largeLeafedBushSmall = mixins_1.mixColliderRounded(-8, -4, 16, 8, 2, false);
@@ -1371,10 +1394,14 @@ exports.fruits = [
     exports.lemon, exports.lime, exports.carrotHeld, exports.mango, exports.grapesGreen[0], exports.grapesPurple[0],
 ];
 exports.tools = [
-    { type: exports.saw.type, text: 'Saw: place & remove walls' },
-    { type: exports.broom.type, text: 'Broom: remove furniture' },
-    { type: exports.hammer.type, text: 'Hammer: place furniture\nuse [mouse wheel] to switch item' },
-    { type: exports.shovel.type, text: 'Shovel: change floor\nuse [mouse wheel] to switch floor type' },
+    { type: exports.saw.type, text: 'Saw: place & remove walls', textMobile: undefined },
+    { type: exports.broom.type, text: 'Broom: remove furniture', textMobile: undefined },
+    { type: exports.hammer.type,
+        text: 'Hammer: place furniture\nuse [mouse wheel] to switch item',
+        textMobile: 'Hammer: place furniture\nuse [Switch item to place] action to switch item' },
+    { type: exports.shovel.type,
+        text: 'Shovel: change floor\nuse [mouse wheel] to switch floor type',
+        textMobile: 'Shovel: change floor\nuse [Switch tile to place] action to switch floor type' },
 ];
 exports.candies1Types = [exports.candyCane1, exports.candyCane2, exports.cookie, exports.cookiePony].map(e => e.type);
 exports.candies2Types = [exports.cookie, exports.cookiePony].map(e => e.type);

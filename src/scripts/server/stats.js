@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs = require("fs");
+const path = require("path");
 const moment = require("moment");
 const lodash_1 = require("lodash");
 const constants_1 = require("../common/constants");
@@ -156,6 +157,13 @@ class StatsTracker {
     }
     startStatTracking() {
         if (!fs.existsSync(this.statsPath)) {
+            try {
+                fs.mkdirSync(path.dirname(this.statsPath), { recursive: true });
+            }
+            catch (e) {
+                if (e.code !== 'EEXIST')
+                    throw e;
+            }
             fs.writeFileSync(this.statsPath, encodeCSV(statsHeaders), { encoding: 'utf8' });
         }
         setInterval(() => {

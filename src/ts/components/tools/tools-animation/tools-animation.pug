@@ -1,4 +1,4 @@
-﻿ng-template(#shareLinkPopover)
+ng-template(#shareLinkPopover)
 	div
 		span.close.ml-2((click)="shareLinkOpen = false") &times;
 		| {{shareLink}} 
@@ -112,6 +112,12 @@
 				.form-group
 					button.btn.btn-sm.ml-1([(ngModel)]="animation.loop" btnCheckbox [btnHighlight]="animation.loop")
 						| loop
+				.form-group(*ngIf="mode !== 'body'")
+					button.btn.btn-sm.ml-1([(ngModel)]="animation.dontOpenEyes" btnCheckbox [btnHighlight]="animation.dontOpenEyes")
+						| dontOpenEyes
+				.form-group(*ngIf="mode !== 'body'")
+					button.btn.btn-sm.ml-1([(ngModel)]="animation.dontCloseMouth" btnCheckbox [btnHighlight]="animation.dontCloseMouth")
+						| dontCloseMouth
 				.btn-group.ml-1(dropdown)
 					button.btn.btn-sm.btn-default.dropdown-toggle(dropdownToggle title="Before animation")
 						| before: {{beforeAnimation?.name || 'none'}}

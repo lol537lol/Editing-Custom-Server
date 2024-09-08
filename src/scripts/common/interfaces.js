@@ -239,7 +239,14 @@ var DoAction;
     DoAction[DoAction["Boop"] = 1] = "Boop";
     DoAction[DoAction["Swing"] = 2] = "Swing";
     DoAction[DoAction["HoldPoof"] = 3] = "HoldPoof";
+    DoAction[DoAction["Kiss"] = 4] = "Kiss";
 })(DoAction = exports.DoAction || (exports.DoAction = {}));
+var GraphicsQuality;
+(function (GraphicsQuality) {
+    GraphicsQuality[GraphicsQuality["Low"] = 0] = "Low";
+    GraphicsQuality[GraphicsQuality["Medium"] = 1] = "Medium";
+    GraphicsQuality[GraphicsQuality["High"] = 2] = "High";
+})(GraphicsQuality = exports.GraphicsQuality || (exports.GraphicsQuality = {}));
 var AccountDataFlags;
 (function (AccountDataFlags) {
     AccountDataFlags[AccountDataFlags["None"] = 0] = "None";
@@ -381,12 +388,14 @@ var Action;
     Action[Action["RequestEntityInfo"] = 24] = "RequestEntityInfo";
     Action[Action["ACL"] = 25] = "ACL";
     Action[Action["Magic"] = 26] = "Magic";
-    Action[Action["RemoveEntity"] = 27] = "RemoveEntity";
-    Action[Action["PlaceEntity"] = 28] = "PlaceEntity";
-    Action[Action["SwitchTool"] = 29] = "SwitchTool";
-    Action[Action["SwitchToolRev"] = 30] = "SwitchToolRev";
-    Action[Action["SwitchToPlaceTool"] = 31] = "SwitchToPlaceTool";
-    Action[Action["SwitchToTileTool"] = 32] = "SwitchToTileTool";
+    Action[Action["Kiss"] = 27] = "Kiss";
+    Action[Action["RemoveEntity"] = 28] = "RemoveEntity";
+    Action[Action["PlaceEntity"] = 29] = "PlaceEntity";
+    Action[Action["SwitchTool"] = 30] = "SwitchTool";
+    Action[Action["SwitchToolRev"] = 31] = "SwitchToolRev";
+    Action[Action["SwitchToPlaceTool"] = 32] = "SwitchToPlaceTool";
+    Action[Action["SwitchToTileTool"] = 33] = "SwitchToTileTool";
+    Action[Action["Excite"] = 34] = "Excite";
 })(Action = exports.Action || (exports.Action = {}));
 var InfoFlags;
 (function (InfoFlags) {
@@ -396,7 +405,7 @@ var InfoFlags;
     InfoFlags[InfoFlags["SupportsLetAndConst"] = 4] = "SupportsLetAndConst";
 })(InfoFlags = exports.InfoFlags || (exports.InfoFlags = {}));
 function isExpressionAction(action) {
-    return action === 3 /* Yawn */ || action === 4 /* Laugh */ || action === 5 /* Sneeze */;
+    return action === 3 /* Yawn */ || action === 4 /* Laugh */ || action === 5 /* Sneeze */ || action === 34 /* Excite */;
 }
 exports.isExpressionAction = isExpressionAction;
 var SelectFlags;
@@ -405,6 +414,12 @@ var SelectFlags;
     SelectFlags[SelectFlags["FetchEx"] = 1] = "FetchEx";
     SelectFlags[SelectFlags["FetchInfo"] = 2] = "FetchInfo";
 })(SelectFlags = exports.SelectFlags || (exports.SelectFlags = {}));
+var HeadAnimationProperties;
+(function (HeadAnimationProperties) {
+    HeadAnimationProperties[HeadAnimationProperties["None"] = 0] = "None";
+    HeadAnimationProperties[HeadAnimationProperties["DontIncreaseEyeOpenness"] = 1] = "DontIncreaseEyeOpenness";
+    HeadAnimationProperties[HeadAnimationProperties["DontDecreaseMouthOpenness"] = 2] = "DontDecreaseMouthOpenness";
+})(HeadAnimationProperties = exports.HeadAnimationProperties || (exports.HeadAnimationProperties = {}));
 var PonyStateFlags;
 (function (PonyStateFlags) {
     PonyStateFlags[PonyStateFlags["None"] = 0] = "None";
@@ -476,10 +491,45 @@ var Muzzle;
     Muzzle[Muzzle["FlatBlep"] = 25] = "FlatBlep";
     // max: 31
 })(Muzzle = exports.Muzzle || (exports.Muzzle = {}));
-exports.CLOSED_MUZZLES = [
-    0 /* Smile */, 1 /* Frown */, 2 /* Neutral */, 3 /* Scrunch */, 6 /* Flat */, 7 /* Concerned */,
-    13 /* Kiss */, 17 /* Kiss2 */,
-];
+function getMuzzleOpenness(muzzle) {
+    switch (muzzle) {
+        case 0 /* Smile */:
+        case 1 /* Frown */:
+        case 2 /* Neutral */:
+        case 3 /* Scrunch */:
+        case 4 /* Blep */:
+        case 6 /* Flat */:
+        case 7 /* Concerned */:
+        case 13 /* Kiss */:
+        case 17 /* Kiss2 */:
+        case 25 /* FlatBlep */:
+            return 0;
+        case 5 /* SmileOpen */:
+        case 8 /* ConcernedOpen */:
+        case 10 /* FrownOpen */:
+        case 11 /* NeutralOpen2 */:
+        case 18 /* SmileTeeth */:
+        case 19 /* FrownTeeth */:
+        case 20 /* NeutralTeeth */:
+        case 21 /* ConcernedTeeth */:
+        case 24 /* Oh */:
+            return 1;
+        case 9 /* SmileOpen2 */:
+            return 2;
+        case 12 /* ConcernedOpen2 */:
+        case 14 /* SmileOpen3 */:
+        case 15 /* NeutralOpen3 */:
+        case 22 /* SmilePant */:
+        case 23 /* NeutralPant */:
+            return 3;
+        case 16 /* ConcernedOpen3 */:
+            return 4;
+        default:
+            console.error('unregistered muzzle in getMuzzleOpenness');
+            return 0;
+    }
+}
+exports.getMuzzleOpenness = getMuzzleOpenness;
 var Eye;
 (function (Eye) {
     Eye[Eye["None"] = 0] = "None";
@@ -509,12 +559,45 @@ var Eye;
     Eye[Eye["X2"] = 24] = "X2";
     // max: 31
 })(Eye = exports.Eye || (exports.Eye = {}));
-function isEyeSleeping(eye) {
-    return eye === 6 /* Closed */ ||
-        (eye >= 11 /* Lines */ && eye <= 14 /* ClosedHappy */) ||
-        (eye >= 21 /* Peaceful */ && eye <= 24 /* X2 */);
+function getEyeOpenness(eye) {
+    switch (eye) {
+        case 0 /* None */:
+        case 6 /* Closed */:
+        case 14 /* ClosedHappy */:
+        case 13 /* ClosedHappy2 */:
+        case 12 /* ClosedHappy3 */:
+        case 11 /* Lines */:
+        case 21 /* Peaceful */:
+        case 22 /* Peaceful2 */:
+        case 23 /* X */:
+        case 24 /* X2 */:
+            return 0;
+        case 5 /* Neutral5 */:
+        case 10 /* Frown4 */:
+            return 1;
+        case 4 /* Neutral4 */:
+        case 9 /* Frown3 */:
+        case 18 /* Sad4 */:
+            return 2;
+        case 3 /* Neutral3 */:
+        case 8 /* Frown2 */:
+        case 17 /* Sad3 */:
+        case 20 /* Angry2 */:
+            return 3;
+        case 2 /* Neutral2 */:
+        case 16 /* Sad2 */:
+        case 19 /* Angry */:
+        case 7 /* Frown */:
+            return 4;
+        case 1 /* Neutral */:
+        case 15 /* Sad */:
+            return 5;
+        default:
+            console.error('unregistered eye in getEyeOpenness');
+            return 5;
+    }
 }
-exports.isEyeSleeping = isEyeSleeping;
+exports.getEyeOpenness = getEyeOpenness;
 var Iris;
 (function (Iris) {
     Iris[Iris["Forward"] = 0] = "Forward";
@@ -559,6 +642,7 @@ exports.defaultDrawOptions = {
     tileGrid: false,
     engine: Engine.Default,
     season: 1 /* Summer */,
+    useDepthBuffer: true,
     error: () => { },
 };
 exports.defaultWorldState = {
@@ -581,4 +665,16 @@ var UpdateFlags;
     UpdateFlags[UpdateFlags["SwitchRegion"] = 2048] = "SwitchRegion";
     // max 32768
 })(UpdateFlags = exports.UpdateFlags || (exports.UpdateFlags = {}));
+if (typeof window !== 'undefined') {
+    exports.counterNow = performance.now;
+}
+else {
+    const hrtime = process.hrtime;
+    const getNanoSeconds = () => {
+        const hr = hrtime();
+        return hr[0] * 1e9 + hr[1];
+    };
+    const nodeLoadTime = getNanoSeconds() - process.uptime() * 1e9;
+    exports.counterNow = () => (getNanoSeconds() - nodeLoadTime) / 1e6;
+}
 //# sourceMappingURL=interfaces.js.map

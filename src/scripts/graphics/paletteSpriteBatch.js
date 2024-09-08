@@ -55,8 +55,8 @@ function pushQuad(
     return index + 32;
 }
 */
-function pushQuad(vertices, //_verticesUint32: Uint32Array,
-transform, index, type, color, palette, sx, sy, sw, sh, dx, dy, dw, dh) {
+function pushQuad(vertices, transform, index, type, color, palette, sx, sy, sw, sh, dx, dy, dz, dw, dh) {
+    index |= 0;
     const c1 = types[type];
     const y2 = dy + dh;
     const x2 = dx + dw;
@@ -72,83 +72,79 @@ transform, index, type, color, palette, sx, sy, sw, sh, dx, dy, dw, dh) {
     const t3 = transform[3];
     const t4 = transform[4];
     const t5 = transform[5];
-    // pushVertex(vertices, index, dx, dy, u1, v1, pu, pv, color, c1, transform);
-    vertices[(index + 0) | 0] = t0 * dx + t2 * dy + t4;
-    vertices[(index + 1) | 0] = t1 * dx + t3 * dy + t5;
-    vertices[(index + 2) | 0] = u1;
-    vertices[(index + 3) | 0] = v1;
-    vertices[(index + 4) | 0] = pu;
-    vertices[(index + 5) | 0] = pv;
-    vertices[(index + 6) | 0] = color;
-    vertices[(index + 7) | 0] = c1;
-    // pushVertex(vertices, index + 8, x2, dy, u2, v1, pu, pv, color, c1, transform);
-    vertices[(index + 8) | 0] = t0 * x2 + t2 * dy + t4;
-    vertices[(index + 9) | 0] = t1 * x2 + t3 * dy + t5;
-    vertices[(index + 10) | 0] = u2;
-    vertices[(index + 11) | 0] = v1;
-    vertices[(index + 12) | 0] = pu;
-    vertices[(index + 13) | 0] = pv;
-    vertices[(index + 14) | 0] = color;
-    vertices[(index + 15) | 0] = c1;
-    // pushVertex(vertices, index + 16, x2, y2, u2, v2, pu, pv, color, c1, transform);
-    vertices[(index + 16) | 0] = t0 * x2 + t2 * y2 + t4;
-    vertices[(index + 17) | 0] = t1 * x2 + t3 * y2 + t5;
-    vertices[(index + 18) | 0] = u2;
-    vertices[(index + 19) | 0] = v2;
-    vertices[(index + 20) | 0] = pu;
-    vertices[(index + 21) | 0] = pv;
-    vertices[(index + 22) | 0] = color;
-    vertices[(index + 23) | 0] = c1;
-    // pushVertex(vertices, index + 24, dx, y2, u1, v2, pu, pv, color, c1, transform);
-    vertices[(index + 24) | 0] = t0 * dx + t2 * y2 + t4;
-    vertices[(index + 25) | 0] = t1 * dx + t3 * y2 + t5;
-    vertices[(index + 26) | 0] = u1;
-    vertices[(index + 27) | 0] = v2;
-    vertices[(index + 28) | 0] = pu;
-    vertices[(index + 29) | 0] = pv;
-    vertices[(index + 30) | 0] = color;
-    vertices[(index + 31) | 0] = c1;
-    return index + 32;
+    vertices[index++] = t0 * dx + t2 * dy + t4;
+    vertices[index++] = t1 * dx + t3 * dy + t5;
+    vertices[index++] = dz;
+    vertices[index++] = u1;
+    vertices[index++] = v1;
+    vertices[index++] = pu;
+    vertices[index++] = pv;
+    vertices[index++] = color;
+    vertices[index++] = c1;
+    vertices[index++] = t0 * x2 + t2 * dy + t4;
+    vertices[index++] = t1 * x2 + t3 * dy + t5;
+    vertices[index++] = dz;
+    vertices[index++] = u2;
+    vertices[index++] = v1;
+    vertices[index++] = pu;
+    vertices[index++] = pv;
+    vertices[index++] = color;
+    vertices[index++] = c1;
+    vertices[index++] = t0 * x2 + t2 * y2 + t4;
+    vertices[index++] = t1 * x2 + t3 * y2 + t5;
+    vertices[index++] = dz;
+    vertices[index++] = u2;
+    vertices[index++] = v2;
+    vertices[index++] = pu;
+    vertices[index++] = pv;
+    vertices[index++] = color;
+    vertices[index++] = c1;
+    vertices[index++] = t0 * dx + t2 * y2 + t4;
+    vertices[index++] = t1 * dx + t3 * y2 + t5;
+    vertices[index++] = dz;
+    vertices[index++] = u1;
+    vertices[index++] = v2;
+    vertices[index++] = pu;
+    vertices[index++] = pv;
+    vertices[index++] = color;
+    vertices[index++] = c1;
+    return index;
 }
 // function colorWithAlpha(color: number, alpha: number) {
 // 	return ((color & 0xffffff00) | (((color & 0xff) * alpha) & 0xff)) >>> 0;
 // }
-exports.PALETTE_BATCH_BYTES_PER_VERTEX = 2 * 4 + 4 * 4 + 4 + 4;
 class PaletteSpriteBatch extends baseSpriteBatch_1.BaseSpriteBatch {
-    constructor(gl, capacity, buffer, vertexBuffer, indexBuffer) {
-        super(gl, capacity, buffer, vertexBuffer, indexBuffer, [
-            { name: 'position', size: 2 },
+    constructor(gl, vertexCapacityMax, indexBuffer) {
+        super(gl, vertexCapacityMax, indexBuffer, [
+            { name: 'position', size: 3 },
             { name: 'texcoord0', size: 4 },
             { name: 'color', size: 4, type: gl.UNSIGNED_BYTE, normalized: true },
             { name: 'color1', size: 4, type: gl.UNSIGNED_BYTE, normalized: true },
         ]);
+        this.depth = 1;
         this.palette = true;
         this.defaultPalette = paletteManager_1.createPalette(new Uint32Array(0));
     }
     drawImage(type, color, palette, sx, sy, sw, sh, dx, dy, dw, dh) {
-        if (this.capacity <= this.spritesCount) {
+        if (this.spritesCapacity <= this.spritesCount) {
             this.flush();
         }
-        this.index = pushQuad(this.vertices, //this.verticesUint32,
-        this.transform, this.index, type, baseSpriteBatch_1.getColorFloat(color, this.globalAlpha), palette || this.defaultPalette, sx, sy, sw, sh, dx, dy, dw, dh);
+        this.index = pushQuad(this.vertices, this.transform, this.index, type, baseSpriteBatch_1.getColorFloat(color, this.globalAlpha), palette || this.defaultPalette, sx, sy, sw, sh, dx, dy, this.depth, dw, dh);
         this.spritesCount++;
-        this.tris += 2;
     }
     drawRect(color, x, y, w, h) {
         if (w !== 0 && h !== 0) {
-            if (this.capacity <= this.spritesCount) {
+            if (this.spritesCapacity <= this.spritesCount) {
                 this.flush();
             }
             const s = this.rectSprite || defaultRectSprite;
-            this.index = pushQuad(this.vertices, //this.verticesUint32,
-            this.transform, this.index, s.type, baseSpriteBatch_1.getColorFloat(color, this.globalAlpha), this.defaultPalette, s.x, s.y, s.w, s.h, x, y, w, h);
+            this.index = pushQuad(this.vertices, this.transform, this.index, s.type, baseSpriteBatch_1.getColorFloat(color, this.globalAlpha), this.defaultPalette, s.x, s.y, s.w, s.h, x, y, this.depth, w, h);
             this.spritesCount++;
-            this.tris += 2;
         }
     }
     drawSprite(s, color, palette, x, y) {
         if (s.w !== 0 && s.h !== 0) {
-            if (this.capacity <= this.spritesCount) {
+            if (this.spritesCapacity <= this.spritesCount) {
                 this.flush();
             }
             if (this.hasCrop) {
@@ -182,18 +178,19 @@ class PaletteSpriteBatch extends baseSpriteBatch_1.BaseSpriteBatch {
                     h -= shiftBottom;
                 }
                 if (w > 0 && h > 0) {
-                    this.index = pushQuad(this.vertices, //this.verticesUint32,
-                    this.transform, this.index, s.type, baseSpriteBatch_1.getColorFloat(color, this.globalAlpha), palette || this.defaultPalette, sx, sy, w, h, dx, dy, w, h);
+                    this.index = pushQuad(this.vertices, this.transform, this.index, s.type, baseSpriteBatch_1.getColorFloat(color, this.globalAlpha), palette || this.defaultPalette, sx, sy, w, h, dx, dy, this.depth, w, h);
                     this.spritesCount++;
-                    this.tris += 2;
                 }
             }
             else {
-                this.index = pushQuad(this.vertices, //this.verticesUint32,
-                this.transform, this.index, s.type, baseSpriteBatch_1.getColorFloat(color, this.globalAlpha), palette || this.defaultPalette, s.x, s.y, s.w, s.h, x + s.ox, y + s.oy, s.w, s.h);
+                this.index = pushQuad(this.vertices, this.transform, this.index, s.type, baseSpriteBatch_1.getColorFloat(color, this.globalAlpha), palette || this.defaultPalette, s.x, s.y, s.w, s.h, x + s.ox, y + s.oy, this.depth, s.w, s.h);
                 this.spritesCount++;
-                this.tris += 2;
             }
+        }
+    }
+    patchBatchDepth(batch) {
+        for (let i = 0; i < batch.length; i += 9) {
+            batch[i + 2] = this.depth;
         }
     }
 }

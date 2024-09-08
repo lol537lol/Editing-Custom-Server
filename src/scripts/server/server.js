@@ -317,10 +317,8 @@ settings_1.reloadSettings().then(() => {
         polling_1.startSupporterInvitesCleanup();
         polling_1.startPotentialDuplicatesCleanup(adminService);
         polling_1.startAccountAlertsCleanup();
-        polling_1.startUpdatePastSupporters();
         polling_1.startClearTo10Origns(adminService);
         polling_1.startClearVeryOldOrigns(adminService);
-        polling_1.pollPatreon(config_1.server, settings_1.settings);
     }
     if (config_1.args.admin) {
         polling_1.pollDiskSpace();

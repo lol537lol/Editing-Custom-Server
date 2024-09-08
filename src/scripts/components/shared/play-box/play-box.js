@@ -34,6 +34,7 @@ let PlayBox = class PlayBox {
         this.spinnerIcon = icons_1.faSpinner;
         this.warningIcon = icons_1.faExclamationCircle;
         this.infoIcon = icons_1.faInfoCircle;
+        this.playIcon = icons_1.faPlay;
         this.requestBirthdate = constants_1.REQUEST_DATE_OF_BIRTH;
         this.errorChange = new core_1.EventEmitter();
         this.joining = false;

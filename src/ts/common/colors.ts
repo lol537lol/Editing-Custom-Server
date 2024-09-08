@@ -35,6 +35,11 @@ export const PATREON_COLOR = 0xf86754ff;
 export const WHISPER_COLOR = 0xffa1dfff;
 export const FRIENDS_COLOR = 0x71ff7fff;
 
+//custom tags
+export const OP_COLOR = 0x8958ffff;
+export const CONTRIBUTOR_COLOR = 0xb5dfb9ff;
+export const NPC_COLOR = 0xdfdcb5ff;
+
 export const SUPPORTER1_COLOR = PATREON_COLOR;
 export const SUPPORTER2_COLOR = 0xffa32bff;
 export const SUPPORTER3_COLOR = 0xffcf00ff;

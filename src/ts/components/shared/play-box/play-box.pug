@@ -39,6 +39,7 @@
 				fa-icon.mr-1([icon]="spinnerIcon" [spin]="true")
 				| Cancel
 			div(*ngIf="!joining && server")
+				fa-icon.mr-1([icon]="playIcon")
 				| #[strong {{label || 'Play'}}] on #[span {{server.name}}]
 			.text-faded(*ngIf="!joining && !server")
 				| select server to play

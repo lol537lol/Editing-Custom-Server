@@ -22,6 +22,7 @@ class ContextSpriteBatch extends baseStateBatch_1.BaseStateBatch {
     constructor(canvas) {
         super();
         this.canvas = canvas;
+        this.depth = 1;
         this.pixelSize = 1;
         this.disableShading = false;
         this.ignoreColor = 0;
@@ -106,6 +107,10 @@ class ContextSpriteBatch extends baseStateBatch_1.BaseStateBatch {
         return undefined;
     }
     releaseBatch() {
+    }
+    flush() {
+    }
+    patchBatchDepth(_batch) {
     }
 }
 exports.ContextSpriteBatch = ContextSpriteBatch;

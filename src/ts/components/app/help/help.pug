@@ -5,7 +5,12 @@ h1(focusTitle) Help
 	
 		section
 			h2 Contact
-			p For all inquiries please send an email to #[b {{contactEmail}}]
+			p
+				| For technical issues, see the #[a(routerLink="/help" fragment="issues") Common Issues] section. If it doesn't solve your problem, 
+				| send an email to #[b {{contactEmail}}]
+				span(*ngIf="contactDiscord")
+					|  or message #[b {{contactDiscord}}] on Discord
+				| .
 
 		section
 			h2 Controls
@@ -141,6 +146,7 @@ h1(focusTitle) Help
 					<code>/yawn</code>
 					<code>/laugh</code> <code>/haha</code> <code>/хаха</code> <code>/jaja</code> <code>/lol</code>
 					<code>/sneeze</code> <code>/achoo</code>
+					<code>/excite</code> <code>/tada</code>
 				li
 					strong House saving
 					ul
@@ -151,15 +157,6 @@ h1(focusTitle) Help
 						li <code>/unlockhouse</code> - enables editing by other people (need to be alone in the house or a party leader)
 						li <code>/removetoolbox</code> - removes toolbox from the house (need to be alone in the house or a party leader)
 						li <code>/restoretoolbox</code> - restores toolbox to the house (need to be alone in the house or a party leader)
-
-		section
-			h4 Supporter-only commands
-
-			ul.spaced-list
-				li <code>/ss</code> - supporter colored text
-				li <code>/s1</code> - tier 1 supporter colored text (for use by higher tier supporters)
-				li <code>/s2</code> - tier 2 supporter colored text (for use by higher tier supporters)
-				li <code>/s3</code> - tier 3 supporter colored text (for use by higher tier supporters)
 
 		section
 			h2 Chat emojis
@@ -176,7 +173,7 @@ h1(focusTitle) Help
 
 	.col-md-5
 		section
-			h2 Common issues
+			h2#issues Common issues
 
 			section
 				h4 Keys stuck when using iPad keyboard
@@ -211,13 +208,15 @@ h1(focusTitle) Help
 				p.text-fading.
 					This is usually caused by outdated graphics drivers or browser.
 					Check if your browser is #[a(href="https://updatemybrowser.org/") up to date] and check
-					if there are new updates for your graphics card or device.
+					if there are new updates for your graphics driver or your device.
 				p.text-fading.
 					If your browser is already up to date, try installing different browser.
 					We recommend using #[a(href="https://www.google.com/chrome/") Chrome]
 					or #[a(href="https://www.mozilla.org/en-US/firefox/new/") Firefox].
 				p.text-fading.
-					Some older devices don't support necessary functions and will never work with the game.
+					If other workarounds didn't help, switching Graphics Quality to Low usually works.
+					You'll find that option in the game settings. After switching to Low, it
+					might take a minute for the screen to stop glitching.
 
 			section
 				h4 Graphical glitches, disappearing objects
@@ -247,13 +246,13 @@ h1(focusTitle) Help
 					using #[b Chrome] or #[b Edge] browsers for best performance.
 
 			section
-				h4 Why can't I create multiple accounts
+				h4#rules Why can't I create multiple accounts
 				p.text-fading.
-					This restriction is in-place to protect you and the game itself from other players in the game.
+					This restriction is in place to protect you and the game itself from other players in the game.
 				p.text-fading.
 					Allowing multiple accounts for single person invalidates ignore and hide systems that 
 					allow you to ignore and hide other players that are harassing or bothering you in any way.
-					It also invalidates mute and ban system that is in-place to protect you from players breaking
+					It also invalidates mute and ban system that is in place to protect you from players breaking
 					the game rules to bother or harass others.
 				p.text-fading.
 					Allowing use of multiple accounts at the same time would dramatically increase load on the
@@ -263,13 +262,13 @@ h1(focusTitle) Help
 					game anymore.
 				p.text-fading.
 					Use of multiple accounts also invalidates any limits (like character limit) that we put on the accounts.
-					The limits are in-place to prevent large amount of players that we have at the moment from
+					The limits are in place to prevent large amount of players that we have at the moment from
 					exhausting our limited server resources.
 
 			section
 				h4 Why can't I modify the game with hacks or scripts
 				p.text-fading.
-					This restriction is in-place to protect you and the game itself from other players in the game.
+					This restriction is in place to protect you and the game itself from other players in the game.
 				p.text-fading.
 					Almost all third-party scripts used in-game were used to harass other players. Even when the
 					creator of the script did not intend it to be used in that way, the limited knowledge of the

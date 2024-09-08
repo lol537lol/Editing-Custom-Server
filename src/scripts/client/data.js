@@ -21,10 +21,11 @@ exports.local = attr('data-local') === 'true';
 exports.token = attr('data-token');
 exports.version = attr('data-version');
 exports.isPublic = attr('data-public') === 'true';
-exports.supporterLink = attr('data-supporter-link');
+exports.discordLink = attr('data-discord-link');
 exports.twitterLink = attr('data-twitter-link');
 exports.contactEmail = attr('data-email');
 exports.copyrightName = attr('data-copyright');
+exports.contactDiscord = attr('data-contact-discord');
 /* istanbul ignore next */
 exports.oauthProviders = json('oauth-providers', '[]')
     .map(a => (Object.assign({}, a, { url: `/auth/${a.id}` })));

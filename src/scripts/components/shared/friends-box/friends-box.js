@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
 const core_1 = require("@angular/core");
-const icons_1 = require("../../../client/icons");
+const free_solid_svg_icons_1 = require("@fortawesome/free-solid-svg-icons");
 const model_1 = require("../../services/model");
 const game_1 = require("../../../client/game");
 const utils_1 = require("../../../common/utils");
@@ -12,11 +12,16 @@ let FriendsBox = class FriendsBox {
         this.settings = settings;
         this.model = model;
         this.game = game;
-        this.friendsIcon = icons_1.faUserFriends;
-        this.cogIcon = icons_1.faCog;
-        this.addToPartyIcon = icons_1.faUserPlus;
-        this.userOptionsIcon = icons_1.faUserCog;
-        this.statusIcon = icons_1.faCircle;
+        this.friendsIcon = free_solid_svg_icons_1.faUserFriends;
+        this.cogIcon = free_solid_svg_icons_1.faCog;
+        this.addToPartyIcon = free_solid_svg_icons_1.faUserPlus;
+        this.userOptionsIcon = free_solid_svg_icons_1.faUserCog;
+        this.statusIcon = free_solid_svg_icons_1.faCircle;
+        this.cancelIcon = free_solid_svg_icons_1.faTimes; // Иконка крестика для Cancel
+        this.removeIcon = free_solid_svg_icons_1.faTrash;
+        this.inviteIcon = free_solid_svg_icons_1.faUsers;
+        this.removeFriendIcon = free_solid_svg_icons_1.faUserMinus;
+        this.sendWhisperIcon = free_solid_svg_icons_1.faComment;
         this.sendMessage = new core_1.EventEmitter();
     }
     get friends() {

@@ -118,6 +118,7 @@ exports.faDeviantart = fa_icons_4.faDeviantart;
 exports.faTwitter = fa_icons_4.faTwitter;
 exports.faTumblr = fa_icons_4.faTumblr;
 exports.faGithub = fa_icons_4.faGithub;
+exports.faDiscord = fa_icons_4.faDiscord;
 exports.partyLeaderIcon = fa_icons_1.faCrown;
 exports.offlineIcon = fa_icons_1.faPlug;
 exports.emptyIcon = {
@@ -134,6 +135,7 @@ exports.oauthIcons = {
     github: fa_icons_3.faGithub,
     vkontakte: fa_icons_3.faVk,
     google: fa_icons_3.faGoogle,
+    discord: fa_icons_3.faDiscord
 };
 exports.uaIcons = {
     // browser

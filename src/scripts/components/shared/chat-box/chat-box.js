@@ -14,6 +14,7 @@ const emoji_1 = require("../../../client/emoji");
 const htmlUtils_1 = require("../../../client/htmlUtils");
 const utils_1 = require("../../../common/utils");
 const handlers_1 = require("../../../client/handlers");
+const lodash_1 = require("lodash");
 const chatTypeNames = [];
 const chatTypeClasses = [];
 function setupChatType(type, name) {
@@ -30,7 +31,7 @@ setupChatType(9 /* Whisper */, 'whisper');
 setupChatType(2 /* Think */, 'think');
 setupChatType(3 /* PartyThink */, 'party think');
 function isActionCommand(message) {
-    return /^\/(yawn|sneeze|achoo|laugh|lol|haha|хаха|jaja)/i.test(message);
+    return /^\/(yawn|sneeze|excite|tada|achoo|laugh|lol|haha|хаха|jaja)/i.test(message);
 }
 let ChatBox = class ChatBox {
     constructor(game, zone) {
@@ -38,9 +39,12 @@ let ChatBox = class ChatBox {
         this.maxSayLength = constants_1.SAY_MAX_LENGTH;
         this.commentIcon = icons_1.faComment;
         this.sendIcon = icons_1.faAngleDoubleRight;
+        this.emotes = emoji_1.emojis;
+        this.emojiBoxState = 'none';
         this.isOpen = false;
         this.message = '';
         this.chatType = 0 /* Say */;
+        this.btnEmoji = emoji_1.emojis[0].names[0];
         this.pasted = false;
         this.lastMessages = [];
         this.state = {};
@@ -77,6 +81,23 @@ let ChatBox = class ChatBox {
     }
     ngOnDestroy() {
         this.subscriptions.forEach(s => s.unsubscribe());
+    }
+    addEmoji(emoji) {
+        this.toggleEmojiBox();
+        if (!this.message) {
+            this.message = emoji;
+        }
+        else if (this.input.maxLength > this.message.length) {
+            this.message += emoji;
+        }
+    }
+    toggleEmojiBox() {
+        if (this.emojiBoxState === 'none') {
+            this.emojiBoxState = 'inline-block';
+        }
+        else {
+            this.emojiBoxState = 'none';
+        }
     }
     send(_event) {
         let chatType = this.chatType;
@@ -209,7 +230,13 @@ let ChatBox = class ChatBox {
     }
     say(message, chatType, entityId) {
         this.game.lastChatMessageType = chatType;
-        return !!this.game.send(server => server.say(entityId, message, chatType));
+        if (message.toLowerCase().startsWith('/shrug')) {
+            var rawMessage = message.substring(6);
+            return !!this.game.send(server => server.say(entityId, ((rawMessage !== '') ? rawMessage + ' ' : '') + `¯\\_(ツ)_/¯`, chatType));
+        }
+        else {
+            return !!this.game.send(server => server.say(entityId, message, chatType));
+        }
     }
     changeChatType(e, chatType) {
         this.chatType = chatType;
@@ -243,6 +270,7 @@ let ChatBox = class ChatBox {
     }
     close() {
         if (this.isOpen) {
+            this.emojiBoxState = 'none';
             this.input.blur();
             this.isOpen = false;
             this.chatBox.nativeElement.hidden = true;
@@ -257,6 +285,12 @@ let ChatBox = class ChatBox {
         else {
             this.open();
         }
+    }
+    onMouseEnterEmojiButton(event) {
+        if (!event.target)
+            return;
+        const emoji = lodash_1.sample(emoji_1.emojis);
+        this.btnEmoji = emoji.names[0];
     }
     toggleChatType() {
         const chatTypes = getChatTypes(this.game);

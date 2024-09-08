@@ -1,112 +1,40 @@
-@keyframes glitch {
-    0% {
-        transform: none;
-        opacity: 1;
-    }
-    20% {
-        transform: skew(-0.5deg, -0.5deg);
-        opacity: 0.8;
-    }
-    40% {
-        transform: skew(0.5deg, 0.5deg);
-        opacity: 1;
-    }
-    60% {
-        transform: skew(-0.5deg, -0.5deg);
-        opacity: 0.8;
-    }
-    80% {
-        transform: skew(0.5deg, 0.5deg);
-        opacity: 1;
-    }
-    100% {
-        transform: none;
-        opacity: 1;
-    }
-}
-
 .team-members {
-    margin-top: 10px;
+	margin-top: 10px;
 }
 
 .team-member {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 10px;
-    text-align: center;
-
-    b {
-        white-space: nowrap;
-    }
-
-    .text-muted {
-        font-size: 14px;
-    }
+	b {
+		white-space: nowrap;
+	}
+	
+	.text-muted {
+		font-size: 14px;
+	}
 }
 
 .team-avatar {
-    background: white;
-    position: relative;
-    margin-bottom: 5px;
-    width: 600px;
-    height: 600px;
-    border: solid 4px #4CAF50;
-    border-radius: 15px; /* more rounded */
-    overflow: hidden;
+	background: white;
+	position: relative;
+	margin: 0 15px 20px 0;
+	width: 90px;
+	height: 90px;
+	border-radius: 50%;
+	border: solid 4px white;
+	transform: scale(0.7);
+	margin-right: 5px;
+	margin-bottom: 10px;
+	margin-top: -10px;
+
+	> img {
+		width: 100%;
+		height: 100%;
+		border-radius: 50%;
+	}
 }
 
-.moderators-list {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    margin-top: 10px;
-}
-
-.moderator-item {
-    margin-right: 10px;
-    margin-bottom: 10px;
-}
-
-.moderator-avatar {
-    background: white;
-    width: 600px;
-    height: 600px;
-    border-radius: 15px; /* more rounded */
-    border: solid 4px white;
-    overflow: hidden;
-    margin-bottom: 5px;
-}
-
-.moderator-name {
-    margin-top: 5px;
-    text-align: center;
-}
-
-.moderator-title {
-    margin-top: 2px;
-    text-align: center;
-    font-size: 12px;
-}
-
-.testers-list {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    margin-top: 10px;
-}
-
-.tester-item {
-    margin-right: 10px;
-    margin-bottom: 10px;
-}
-
-.tester-avatar {
-    background: white;
-    width: 600px;
-    height: 600px;
-    border-radius: 15px; /* more rounded */
-    border: solid 4px gray;
-    overflow: hidden;
-    margin-bottom: 5px;
+.changelog-gif {
+	display: block;
+	margin: 20px auto; // Отступы сверху и снизу
+	max-width: 100%; // Ограничение ширины для адаптивности
+	height: auto; // Автоматическая высота для сохранения пропорций
 }

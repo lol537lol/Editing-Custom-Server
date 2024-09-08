@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
 import { emojis } from '../../../client/emoji';
 import { getUrl } from '../../../client/rev';
-import { CREDITS, CONTRIBUTORS, Credit } from '../../../client/credits';
+import { CREDITS, CONTRIBUTORS, Credit, MODERATORS } from '../../../client/credits';
 import { CHANGELOG } from '../../../generated/changelog';
 import { SUPPORTER_REWARDS_LIST } from '../../../common/constants';
-import { supporterLink, contactEmail } from '../../../client/data';
+import { discordLink, contactEmail, contactDiscord } from '../../../client/data';
 
 function toCredit(credit: Credit) {
 	return {
@@ -23,9 +23,11 @@ export class About {
 	readonly title = document.title;
 	readonly emotes = emojis;
 	readonly credits = CREDITS.map(toCredit);
+	readonly moderators = MODERATORS.map(toCredit);
 	readonly contributors = CONTRIBUTORS;
 	readonly changelog = CHANGELOG;
 	readonly rewards = SUPPORTER_REWARDS_LIST;
-	readonly patreonLink = supporterLink;
+	readonly discordLink = discordLink;
 	readonly contactEmail = contactEmail;
+	readonly contactDiscord = contactDiscord;
 }

@@ -59,11 +59,22 @@ function updateClientCharacter(client, character) {
     client.characterName = emoji_1.replaceEmojis(client.character.name);
 }
 exports.updateClientCharacter = updateClientCharacter;
+function isMobileUserAgent(userAgent) {
+    if (!userAgent) {
+        return false;
+    }
+    return userAgent.includes('Android') ||
+        userAgent.includes('iPhone') ||
+        userAgent.includes('iPad') ||
+        userAgent.includes('iPod') ||
+        userAgent.includes('Windows Phone');
+}
 function createClient(client, account, friends, hides, character, pony, defaultMap, reporter, origin) {
     updateClientCharacter(client, character);
     client.ip = origin && origin.ip || '';
     client.country = origin && origin.country || '??';
     client.userAgent = client.originalRequest && client.originalRequest.headers['user-agent'];
+    client.isMobile = isMobileUserAgent(client.userAgent);
     client.accountId = account._id.toString();
     client.accountName = account.name;
     client.ignores = new Set(account.ignores);
@@ -90,8 +101,7 @@ function createClient(client, account, friends, hides, character, pony, defaultM
     client.safeX = pony.x;
     client.safeY = pony.y;
     client.lastPacket = Date.now();
-    client.lastAction = 0;
-    client.lastBoopAction = 0;
+    client.lastBoopOrKissAction = 0;
     client.lastExpressionAction = 0;
     client.lastSays = [];
     client.lastX = pony.x;
@@ -247,7 +257,7 @@ exports.parseOrCurrentExpression = parseOrCurrentExpression;
 function playerSleep(pony, args = '') {
     if (pony.vx === 0 && pony.vy === 0) {
         const base = parseOrCurrentExpression(pony, args) || expressionUtils_1.expression(6 /* Closed */, 6 /* Closed */, 2 /* Neutral */);
-        const muzzle = interfaces_1.CLOSED_MUZZLES.indexOf(base.muzzle) !== -1 ? base.muzzle : 2 /* Neutral */;
+        const muzzle = interfaces_1.getMuzzleOpenness(base.muzzle) === 0 ? base.muzzle : 2 /* Neutral */;
         const expr = Object.assign({}, base, { muzzle, left: 6 /* Closed */, right: 6 /* Closed */, extra: 2 /* Zzz */ });
         setEntityExpression(pony, expr, 0, true);
     }
@@ -333,8 +343,11 @@ function useHeldItem(client) {
     }
 }
 exports.useHeldItem = useHeldItem;
-function canPerformAction(client) {
-    return client.lastAction < Date.now();
+function canPerformAction(client, now) {
+    if (!now) {
+        now = Date.now();
+    }
+    return client.lastExpressionAction < now && client.lastBoopOrKissAction < now;
 }
 exports.canPerformAction = canPerformAction;
 function updateEntityPlayerState(client, entity) {
@@ -344,59 +357,78 @@ function updateEntityPlayerState(client, entity) {
 exports.updateEntityPlayerState = updateEntityPlayerState;
 // actions
 function turnHead(client) {
-    if (canPerformAction(client)) {
-        entityUtils_1.updateEntityState(client.pony, client.pony.state ^ 4 /* HeadTurned */);
-    }
+    entityUtils_1.updateEntityState(client.pony, client.pony.state ^ 4 /* HeadTurned */);
 }
 exports.turnHead = turnHead;
 const purpleGrapeTypes = entities.grapesPurple.map(x => x.type);
 const greenGrapeTypes = entities.grapesGreen.map(x => x.type);
-function boop(client, now) {
-    if (canPerformAction(client) && entityUtils_2.canBoop2(client.pony) && client.lastBoopAction < now) {
-        cancelEntityExpression(client.pony);
-        entityUtils_1.sendAction(client.pony, 1 /* Boop */);
-        if (!client.shadowed && (entityUtils_2.isPonySitting(client.pony) || entityUtils_2.isPonyStanding(client.pony))) {
-            const boopRect = entityUtils_2.getBoopRect(client.pony);
-            const boopBounds = rect_1.withBorder(boopRect, 1);
-            const entities = serverMap_1.findEntitiesInBounds(client.map, boopBounds);
-            const entity = entities.find(e => entityUtils_1.canBoopEntity(e, boopRect));
-            if (entity) {
-                if (entity.boop) {
-                    entity.boop(client);
-                }
-                else if (entity.type === constants_1.PONY_TYPE) {
-                    const clientHold = client.pony.options.hold || 0;
-                    if (entityUtils_1.isHoldingGrapes(entity) && clientHold !== entities_1.grapeGreen.type && clientHold !== entities_1.grapePurple.type) {
-                        let index = purpleGrapeTypes.indexOf(entity.options.hold || 0);
+function boopEntity(client, rect, isOnlyBooping) {
+    if (!client.shadowed && (entityUtils_2.isPonySitting(client.pony) || entityUtils_2.isPonyStanding(client.pony))) {
+        const boopBounds = rect_1.withBorder(rect, 1);
+        const entities = serverMap_1.findEntitiesInBounds(client.map, boopBounds);
+        const entity = entities.find(e => entityUtils_1.canBoopEntity(e, rect));
+        if (entity) {
+            if (entity.boop) {
+                entity.boop(client);
+            }
+            else if (!isOnlyBooping && entity.type === constants_1.PONY_TYPE) {
+                const clientHold = client.pony.options.hold || 0;
+                if (entityUtils_1.isHoldingGrapes(entity) && clientHold !== entities_1.grapeGreen.type && clientHold !== entities_1.grapePurple.type) {
+                    let index = purpleGrapeTypes.indexOf(entity.options.hold || 0);
+                    if (index !== -1) {
+                        holdItem(client.pony, entities_1.grapePurple.type);
+                        if (index === (purpleGrapeTypes.length - 1)) {
+                            unholdItem(entity);
+                        }
+                        else {
+                            holdItem(entity, purpleGrapeTypes[index + 1]);
+                        }
+                    }
+                    else {
+                        let index = greenGrapeTypes.indexOf(entity.options.hold || 0);
                         if (index !== -1) {
-                            holdItem(client.pony, entities_1.grapePurple.type);
-                            if (index === (purpleGrapeTypes.length - 1)) {
+                            holdItem(client.pony, entities_1.grapeGreen.type);
+                            if (index === (greenGrapeTypes.length - 1)) {
                                 unholdItem(entity);
                             }
                             else {
-                                holdItem(entity, purpleGrapeTypes[index + 1]);
-                            }
-                        }
-                        else {
-                            let index = greenGrapeTypes.indexOf(entity.options.hold || 0);
-                            if (index !== -1) {
-                                holdItem(client.pony, entities_1.grapeGreen.type);
-                                if (index === (greenGrapeTypes.length - 1)) {
-                                    unholdItem(entity);
-                                }
-                                else {
-                                    holdItem(entity, greenGrapeTypes[index + 1]);
-                                }
+                                holdItem(entity, greenGrapeTypes[index + 1]);
                             }
                         }
                     }
                 }
             }
         }
-        client.lastBoopAction = now + 500;
+    }
+}
+function boop(client, now) {
+    if (canPerformAction(client, now) && entityUtils_2.canBoopOrKiss(client.pony)) {
+        cancelEntityExpression(client.pony);
+        entityUtils_1.sendAction(client.pony, 1 /* Boop */);
+        boopEntity(client, entityUtils_2.getBoopRect(client.pony), false);
+        client.lastBoopOrKissAction = now + 850;
     }
 }
 exports.boop = boop;
+function kiss(client, now) {
+    if (canPerformAction(client, now) && entityUtils_2.canBoopOrKiss(client.pony)) {
+        cancelEntityExpression(client.pony);
+        entityUtils_1.sendAction(client.pony, 27 /* Kiss */);
+        boopEntity(client, entityUtils_2.getKissRect(client.pony), false);
+        client.lastBoopOrKissAction = now + 3400;
+    }
+}
+exports.kiss = kiss;
+function sneeze(client) {
+    const now = Date.now();
+    if (canPerformAction(client, now)) {
+        cancelEntityExpression(client.pony);
+        entityUtils_1.sendAction(client.pony, 5 /* Sneeze */);
+        boopEntity(client, entityUtils_2.getSneezeRect(client.pony), true);
+        client.lastExpressionAction = now + 750;
+    }
+}
+exports.sneeze = sneeze;
 function stand(client) {
     if (canPerformAction(client) && entityUtils_2.canStand(client.pony, client.map)) {
         if (!entityUtils_2.isPonyFlying(client.pony)) {
@@ -451,10 +483,11 @@ function fly(client) {
 }
 exports.fly = fly;
 function expressionAction(client, action) {
-    if (canPerformAction(client) && interfaces_1.isExpressionAction(action) && client.lastExpressionAction < Date.now()) {
+    const now = Date.now();
+    if (canPerformAction(client, now) && interfaces_1.isExpressionAction(action)) {
         cancelEntityExpression(client.pony);
         entityUtils_1.sendAction(client.pony, action);
-        client.lastExpressionAction = Date.now() + 500;
+        client.lastExpressionAction = now + 750;
     }
 }
 exports.expressionAction = expressionAction;
@@ -632,6 +665,9 @@ function execAction(client, action, settings) {
         case 2 /* TurnHead */:
             turnHead(client);
             break;
+        case 5 /* Sneeze */:
+            sneeze(client);
+            break;
         case 10 /* Stand */:
             stand(client);
             break;
@@ -669,16 +705,19 @@ function execAction(client, action, settings) {
                 entityUtils_1.updateEntityState(client.pony, utils_1.setFlag(client.pony.state, 8 /* Magic */, !has));
             }
             break;
-        case 29 /* SwitchTool */:
+        case 27 /* Kiss */:
+            kiss(client, Date.now());
+            break;
+        case 30 /* SwitchTool */:
             switchTool(client, false);
             break;
-        case 30 /* SwitchToolRev */:
+        case 31 /* SwitchToolRev */:
             switchTool(client, true);
             break;
-        case 31 /* SwitchToPlaceTool */:
+        case 32 /* SwitchToPlaceTool */:
             holdItem(client.pony, entities.hammer.type);
             break;
-        case 32 /* SwitchToTileTool */:
+        case 33 /* SwitchToTileTool */:
             holdItem(client.pony, entities.shovel.type);
             break;
         default:
@@ -703,7 +742,8 @@ function switchTool(client, reverse) {
         const newIndex = reverse ? (index === -1 ? entities_1.tools.length - 1 : index - 1) : ((index + 1) % entities_1.tools.length);
         const tool = entities_1.tools[newIndex];
         holdItem(client.pony, tool.type);
-        chat_1.saySystem(client, tool.text);
+        const text = (client.isMobile && tool.textMobile) ? tool.textMobile : tool.text;
+        chat_1.saySystem(client, text);
     }
 }
 exports.switchTool = switchTool;

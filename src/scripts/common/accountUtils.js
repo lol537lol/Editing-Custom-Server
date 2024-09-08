@@ -18,6 +18,18 @@ function isDev(account) {
     return hasRole(account, 'dev');
 }
 exports.isDev = isDev;
+function isCont(account) {
+    return hasRole(account, 'contr');
+}
+exports.isCont = isCont;
+function isNpc(account) {
+    return hasRole(account, 'npc');
+}
+exports.isNpc = isNpc;
+function isOp(account) {
+    return hasRole(account, 'op');
+} //operator tag
+exports.isOp = isOp;
 function meetsRequirement(account, require) {
     return !require || hasRole(account, require) || meetsSupporterRequirement(account, require);
 }

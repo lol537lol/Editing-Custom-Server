@@ -6,7 +6,7 @@ import { tileHeight, tileWidth, REGION_SIZE } from '../../../common/constants';
 import { faHome } from '../../../client/icons';
 import { updateMap, getTile, createWorldMap, setRegion, setTile } from '../../../common/worldMap';
 import {
-	Season, DrawOptions, defaultDrawOptions, EntityFlags, Entity, WorldMap, defaultWorldState, MapType, MapFlags
+	Season, DrawOptions, defaultDrawOptions, EntityFlags, Entity, WorldMap, MapType, MapFlags
 } from '../../../common/interfaces';
 import { drawCanvas } from '../../../graphics/contextSpriteBatch';
 import { paletteSpriteSheet } from '../../../generated/sprites';
@@ -17,7 +17,7 @@ import { createCamera } from '../../../common/camera';
 import { mockPaletteManager } from '../../../common/ponyInfo';
 import { isCritter } from '../../../common/entityUtils';
 import {
-	createAnEntity, cloud, pony, apple, apple2, orange, orange2, candy, gift1, gift2, appleGreen, appleGreen2
+	createAnEntity, cloud, pony, apple, apple2, orange, orange2, candy, gift1, gift2, appleGreen, appleGreen2, bunny
 } from '../../../common/entities';
 import { drawMap } from '../../../client/draw';
 import { includes, observableToPromise, hasFlag } from '../../../common/utils';
@@ -138,10 +138,11 @@ function drawTheMap(canvas: HTMLCanvasElement, map: WorldMap, info: ToolsMapOthe
 			...defaultDrawOptions,
 			tileGrid: grid,
 			shadowColor: getShadowColor(lightData, HOUR_LENGTH * 12),
+			season: info.season
 		};
 
 		const ignoreTypes = [
-			cloud, pony, apple, apple2, appleGreen, appleGreen2, orange, orange2, candy, gift1, gift2
+			cloud, pony, apple, apple2, appleGreen, appleGreen2, orange, orange2, candy, gift1, gift2, bunny
 		].map(e => e.type);
 
 		const shouldDraw = (e: Entity) => {
@@ -149,7 +150,7 @@ function drawTheMap(canvas: HTMLCanvasElement, map: WorldMap, info: ToolsMapOthe
 		};
 
 		map.entitiesDrawable = info.entities
-			.map(({ type, id, x, y }) => createAnEntity(type, id, x, y, {}, mockPaletteManager, defaultWorldState))
+			.map(({ type, id, x, y }) => createAnEntity(type, id, x, y, {}, mockPaletteManager, { season: info.season }))
 			.filter(shouldDraw);
 
 		updateMap(map, 0);
@@ -183,7 +184,7 @@ function drawMinimap(canvas: HTMLCanvasElement, map: WorldMap, info: ToolsMapOth
 	}
 
 	map.entities = info.entities
-		.map(({ type, id, x, y }) => createAnEntity(type, id, x, y, {}, mockPaletteManager, defaultWorldState));
+		.map(({ type, id, x, y }) => createAnEntity(type, id, x, y, {}, mockPaletteManager, { season: info.season }));
 
 	for (let i = 1; i <= 2; i++) {
 		for (const e of map.entities) {

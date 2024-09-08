@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const ag_sockets_1 = require("ag-sockets");
 const lodash_1 = require("lodash");
+const interfaces_1 = require("../common/interfaces");
 const utils_1 = require("../common/utils");
 const timeUtils_1 = require("../common/timeUtils");
 const constants_1 = require("../common/constants");
@@ -26,6 +27,7 @@ const serverRegion_1 = require("./serverRegion");
 const islandMap_1 = require("./maps/islandMap");
 const houseMap_1 = require("./maps/houseMap");
 const mainMap_1 = require("./maps/mainMap");
+const worldPerfStats_1 = require("./worldPerfStats");
 const MAP_SOFT_LIMIT = 10000;
 class World {
     constructor(server, partyService, friendsService, hidingService, notifications, getSettings, liveSettings, socketStats) {
@@ -99,6 +101,13 @@ class World {
         for (const controller of map.controllers) {
             if (controller.toggleWall) {
                 controller.toggleWall(x, y, type);
+            }
+        }
+    }
+    removeWalls(map) {
+        for (const controller of map.controllers) {
+            if (controller.removeWalls) {
+                controller.removeWalls();
             }
         }
     }
@@ -227,27 +236,25 @@ class World {
         }
     }
     update(delta, now) {
+        const statsStart = interfaces_1.counterNow();
+        let movingEntities = 0;
+        let regionsCount = 0;
+        let mapsCount = 0;
+        let controllersCount = 0;
         const started = Date.now();
+        timing_1.timingUpdate();
         timing_1.timingStart('world.update()');
         regionUtils_1.resetEncodeUpdate();
         this.now = now;
         const nowSeconds = now / 1000;
         const deltaSeconds = delta / 1000;
-        timing_1.timingStart('update tiles');
+        timing_1.timingStart('update tiles and colliders');
         for (const map of this.maps) {
             if (!map.dontUpdateTilesAndColliders) {
                 for (const region of map.regions) {
                     if (region.tilesDirty) {
                         tileUtils_1.updateTileIndices(region, map);
                     }
-                }
-            }
-        }
-        timing_1.timingEnd();
-        timing_1.timingStart('update colliders');
-        for (const map of this.maps) {
-            if (!map.dontUpdateTilesAndColliders) {
-                for (const region of map.regions) {
                     if (region.colliderDirty) {
                         region_1.generateRegionCollider(region, map);
                     }
@@ -257,16 +264,17 @@ class World {
         timing_1.timingEnd();
         timing_1.timingStart('update positions');
         for (const map of this.maps) {
+            ++mapsCount;
             for (const region of map.regions) {
+                ++regionsCount;
                 // TODO: update only moving entities, separate list of movingEntities
                 for (const entity of region.movables) {
                     // TODO: make sure timestamp is initialized if entity is moving
                     const delta = nowSeconds - entity.timestamp;
                     if (delta > 0) {
                         if (entity.vx !== 0 || entity.vy !== 0) {
-                            timing_1.timingStart('updatePosition()');
+                            ++movingEntities;
                             collision_1.updatePosition(entity, delta, map);
-                            timing_1.timingEnd();
                         }
                         entity.timestamp = nowSeconds;
                     }
@@ -288,6 +296,7 @@ class World {
         }
         for (const map of this.maps) {
             for (const controller of map.controllers) {
+                ++controllersCount;
                 controller.update(deltaSeconds, nowSeconds);
             }
         }
@@ -302,14 +311,14 @@ class World {
         regionUtils_1.updateRegions(this.maps); // NOTE: creates transfers
         timing_1.timingEnd();
         timing_1.timingStart('timeoutEntityExpression + inTheAirDelay');
-        for (const { pony } of this.clients) {
+        for (const client of this.clients) {
             // timeout expressions
-            if (pony.exprTimeout && pony.exprTimeout < now) {
-                playerUtils_1.setEntityExpression(pony, undefined); // NOTE: creates updates
+            if (client.pony.exprTimeout && client.pony.exprTimeout < now) {
+                playerUtils_1.setEntityExpression(client.pony, undefined); // NOTE: creates updates
             }
             // count down in-the-air delay
-            if (pony.inTheAirDelay !== undefined && pony.inTheAirDelay > 0) {
-                pony.inTheAirDelay -= deltaSeconds;
+            if (client.pony.inTheAirDelay !== undefined && client.pony.inTheAirDelay > 0) {
+                client.pony.inTheAirDelay -= deltaSeconds;
             }
         }
         timing_1.timingEnd();
@@ -337,9 +346,7 @@ class World {
                     clientsWithSays++;
                 totalSays += saysQueue.length;
                 regionUtils_1.setupTiming(client);
-                timing_1.timingStart('client.update()');
                 client.update(unsubscribes, subscribes, updateBuffer, regionUpdates, saysQueue);
-                timing_1.timingEnd();
                 regionUtils_1.clearTiming(client);
                 playerUtils_1.resetClientUpdates(client);
             }
@@ -352,15 +359,12 @@ class World {
             }
         }
         timing_1.timingEnd();
-        const { isCollidingCount, isCollidingObjectCount } = collision_1.getCollisionStats();
-        timing_1.timingStart(`adds [${clientsWithAdds}]\n` +
-            `updates [${clientsWithUpdates}]\n` +
-            `says [${totalSays} / ${clientsWithSays}]\n` +
-            `sockets [${this.socketStatsText()}]\n` +
-            `collisions [${isCollidingObjectCount} / ${isCollidingCount}]`);
+        timing_1.timingStart(`cleanupOfflineClients`);
         this.cleanupOfflineClients();
         timing_1.timingEnd();
         timing_1.timingEnd();
+        const { sent, received, sentPackets, receivedPackets } = this.socketStats.stats();
+        worldPerfStats_1.updateWorldPerfStats(statsStart, this.clients.length, movingEntities, regionsCount, mapsCount, this.joinQueue.length, controllersCount, clientsWithAdds, clientsWithUpdates, clientsWithSays, totalSays, sent, received, sentPackets, receivedPackets);
     }
     sparseUpdate(now) {
         timing_1.timingStart('world.sparseUpdate()');
@@ -443,11 +447,6 @@ class World {
         this.partyService.cleanupParties();
         timing_1.timingEnd();
         timing_1.timingEnd();
-    }
-    socketStatsText() {
-        const { sent, received, sentPackets, receivedPackets } = this.socketStats.stats();
-        return `sent: ${(sent / 1024).toFixed(2)} kb (${sentPackets}), ` +
-            `recv: ${(received / 1024).toFixed(2)} kb (${receivedPackets})`;
     }
     updatesStats() {
         timing_1.timingStart('updatesStats()');

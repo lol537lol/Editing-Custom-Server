@@ -472,6 +472,31 @@ function processCommand(text) {
     return { command, args };
 }
 exports.processCommand = processCommand;
+function parseSeason(value) {
+    if (!value)
+        return undefined;
+    switch (value.toLowerCase()) {
+        case 'spring': return 8 /* Spring */;
+        case 'summer': return 1 /* Summer */;
+        case 'autumn': return 2 /* Autumn */;
+        case 'winter': return 4 /* Winter */;
+        default: return undefined;
+    }
+}
+exports.parseSeason = parseSeason;
+function parseHoliday(value) {
+    if (!value)
+        return undefined;
+    switch (value.toLowerCase()) {
+        case 'none': return 0 /* None */;
+        case 'halloween': return 2 /* Halloween */;
+        case 'christmas': return 1 /* Christmas */;
+        case 'stpatricks': return 3 /* StPatricks */;
+        case 'easter': return 4 /* Easter */;
+        default: return undefined;
+    }
+}
+exports.parseHoliday = parseHoliday;
 function isTouch(e) {
     return /^touch/i.test(e.type);
 }

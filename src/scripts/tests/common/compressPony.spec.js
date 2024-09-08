@@ -79,9 +79,9 @@ describe('compressPony', () => {
         ];
         tests.forEach(test => it(`works for set: ${JSON.stringify(test)}`, () => {
             const [set, colorBits, customOutlines] = test;
-            const buffer = bitUtils_1.bitWriter(write => compressPony_1.writeSet(write, colorBits, customOutlines, set));
+            const buffer = bitUtils_1.bitWriter(write => compressPony_1.writeSet(write, 5, colorBits, customOutlines, set));
             // console.log(map(buffer, x => x).map(x => x.toString(2).padStart(8, '0')).join(' '));
-            const result = compressPony_1.readSet(bitUtils_1.bitReader(buffer), colorBits, customOutlines);
+            const result = compressPony_1.readSet(bitUtils_1.bitReader(buffer), 5, colorBits, customOutlines);
             chai_1.expect(result).eql(set);
         }));
     });

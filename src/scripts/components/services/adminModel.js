@@ -456,21 +456,17 @@ let AdminModel = class AdminModel {
             .then(() => this.updateState())
             .catch(this.handleError);
     }
-    resetSupporter(accountId) {
-        return this.server.resetSupporter(accountId)
-            .catch(this.handleError);
-    }
-    getLastPatreonData() {
-        return this.server.getLastPatreonData()
-            .catch(this.handleError);
-    }
-    updatePastSupporters() {
-        return this.server.updatePastSupporters()
-            .catch(this.handleError);
-    }
     // other
     getTimings(server) {
         return this.server.getTimings(server)
+            .catch(this.handleError);
+    }
+    setTimingEnabled(server, isEnabled) {
+        return this.server.setTimingEnabled(server, isEnabled)
+            .catch(this.handleError);
+    }
+    getWorldPerfStats(server) {
+        return this.server.getWorldPerfStats(server)
             .catch(this.handleError);
     }
     teleportTo(accountId) {
@@ -520,7 +516,7 @@ let AdminModel = class AdminModel {
         const count = this.events.reduce((sum, e) => sum + (e.deleted ? 0 : 1), 0);
         const inred = this.events.reduce((sum, e) => sum + ((!e.deleted && e.count > 9) ? 1 : 0), 0);
         const flag = this.isLowDiskSpace || this.isLowMemory || this.isOldCertificate || this.isOldPatreon;
-        document.title = `${ponies} | ${count}${lodash_1.repeat('!', inred)}${flag ? ' 🚩' : ''}${!this.connected ? ' ⚠' : ''} | Pony Town`;
+        document.title = `${ponies} | ${count}${lodash_1.repeat('!', inred)}${flag ? ' 🚩' : ''}${!this.connected ? ' ⚠' : ''} | pixel.horse`;
     }
     notify(title, body) {
         if (this.notifications && notification.permission === 'granted') {

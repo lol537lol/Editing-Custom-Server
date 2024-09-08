@@ -1,4 +1,4 @@
-import { PaletteSpriteBatch, Sprite, Palette, SpriteBatch, SpriteSheet, Matrix2D } from '../common/interfaces';
+import { PaletteSpriteBatch, Sprite, Palette, SpriteBatch, SpriteSheet, Matrix2D, Batch } from '../common/interfaces';
 import { createCanvas } from '../client/canvasUtils';
 import { colorToRGBA, getR, getG, getB, getAlpha } from '../common/color';
 import { BaseStateBatch } from './baseStateBatch';
@@ -23,6 +23,7 @@ export function drawCanvas(
 }
 
 export class ContextSpriteBatch extends BaseStateBatch implements PaletteSpriteBatch, SpriteBatch {
+	depth = 1;
 	pixelSize = 1;
 	disableShading = false;
 	ignoreColor = 0;
@@ -136,6 +137,10 @@ export class ContextSpriteBatch extends BaseStateBatch implements PaletteSpriteB
 		return undefined;
 	}
 	releaseBatch() {
+	}
+	flush() {
+	}
+	patchBatchDepth(_batch : Batch) {
 	}
 }
 

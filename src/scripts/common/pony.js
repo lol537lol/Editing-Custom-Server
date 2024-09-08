@@ -50,6 +50,7 @@ function createPony(id, state, info, defaultPalette, paletteManager) {
         z: 0,
         vx: 0,
         vy: 0,
+        depth: 0,
         info,
         order: 0,
         timestamp: 0,
@@ -175,6 +176,14 @@ function updatePonyInfo(pony, info, apply) {
     }
 }
 exports.updatePonyInfo = updatePonyInfo;
+function isPonyBug(pony) {
+    if (pony.info === undefined || pony.palettePonyInfo === undefined) {
+        return false;
+    }
+    const wingType = pony.palettePonyInfo.wings && pony.palettePonyInfo.wings.type || 0;
+    return wingType === 4;
+}
+exports.isPonyBug = isPonyBug;
 function ensurePonyInfoDecoded(pony) {
     if (pony.info !== undefined && pony.palettePonyInfo === undefined) {
         pony.palettePonyInfo = compressPony_1.decodePonyInfo(pony.info, pony.paletteManager);
@@ -233,6 +242,7 @@ function drawPonyEntity(batch, pony, drawOptions) {
         pony.discardBatch = false;
     }
     if (pony.batch !== undefined) {
+        batch.patchBatchDepth(pony.batch);
         batch.drawBatch(pony.batch);
     }
     else if (pony.palettePonyInfo !== undefined) {
@@ -397,6 +407,9 @@ function updatePonyEntity(pony, delta, gameTime, safe) {
             case 3 /* HoldPoof */:
                 animationPlayer_1.playAnimation(pony.holdPoofEffect, spriteAnimations_1.holdPoofAnimation);
                 break;
+            case 4 /* Kiss */:
+                animator_1.setAnimatorState(pony.animator, ponyStates_1.toKissState(animationState) || animationState);
+                break;
             default:
                 if (DEVELOPMENT) {
                     console.error(`Invalid DoAction: ${pony.doAction}`);
@@ -517,8 +530,8 @@ function filterExpression(expression) {
     if (blush ||
         utils_1.hasFlag(extra, 16 /* Hearts */) ||
         utils_1.hasFlag(extra, 4 /* Cry */) ||
-        interfaces_1.isEyeSleeping(expression.left) ||
-        interfaces_1.isEyeSleeping(expression.right)) {
+        (interfaces_1.getEyeOpenness(expression.left) === 0) ||
+        (interfaces_1.getEyeOpenness(expression.right) === 0)) {
         if (expression.muzzle === 22 /* SmilePant */ || expression.muzzle === 23 /* NeutralPant */) {
             expression.muzzle = 2 /* Neutral */;
         }

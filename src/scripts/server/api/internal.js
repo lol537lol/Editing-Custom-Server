@@ -13,6 +13,7 @@ const timing_1 = require("../timing");
 const lodash_1 = require("lodash");
 const serverMap_1 = require("../serverMap");
 const playerUtils_1 = require("../playerUtils");
+const worldPerfStats_1 = require("../worldPerfStats");
 exports.createAccountChanged = (world, tokens, findAccount) => async (accountId) => {
     const account = await findAccount(accountId);
     world.accountUpdated(account);
@@ -183,6 +184,8 @@ function createInternalApi(world, server, reloadSettings, getSettings, tokens, h
         shutdownServer: exports.createShutdownServer(world, live),
         accountHidden: exports.createHiddenStats(hiding),
         getTimings: async () => timing_1.timingEntries(),
+        setTimingEnabled: async (isEnabled) => timing_1.setTimingEnabled(isEnabled),
+        getWorldPerfStats: async () => worldPerfStats_1.getWorldPerfStats(),
         teleportTo: exports.createTeleportTo(world),
     };
 }

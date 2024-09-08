@@ -2412,7 +2412,7 @@ function createMainMap(world) {
     add(entities.rock(108.53, 24.21));
     add(entities.rock(98.63, 38.04));
     add(entities.rock(117.22, 24.63));
-    add(controllerUtils_1.createSignWithText(70.5, 70.5, 'Pony Town', '      Pony Town\n[under construction]', entities.sign));
+    add(controllerUtils_1.createSignWithText(70.5, 70.5, 'pixel.horse', '      pixel.horse\n[under construction]', entities.sign));
     addEntities(createToyStash(47.00, 55.00));
     addEntities(entities.pine3(72.78, 64.13, 0));
     const addCat = (x, y) => {

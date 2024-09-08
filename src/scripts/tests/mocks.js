@@ -33,11 +33,11 @@ function mock(ctor, fields = {}) {
 }
 exports.mock = mock;
 function entity(id, x = 0, y = 0, type = 0, more = {}) {
-    return Object.assign({ id, x, y, z: 0, vx: 0, vy: 0, type, order: 0, state: 0, playerState: 0, flags: 0, timestamp: 0, options: {} }, more);
+    return Object.assign({ id, x, y, z: 0, vx: 0, vy: 0, depth: 0, type, order: 0, state: 0, playerState: 0, flags: 0, timestamp: 0, options: {} }, more);
 }
 exports.entity = entity;
 function serverEntity(id, x = 0, y = 0, type = 0, more = {}) {
-    return Object.assign({ id, x, y, z: 0, vx: 0, vy: 0, type, order: 0, state: 0, playerState: 0, flags: 0, timestamp: 0, options: {} }, more);
+    return Object.assign({ id, x, y, z: 0, vx: 0, vy: 0, depth: 0, type, order: 0, state: 0, playerState: 0, flags: 0, timestamp: 0, options: {} }, more);
 }
 exports.serverEntity = serverEntity;
 function clientPony() {
@@ -60,7 +60,7 @@ function mockClient(fields = {}) {
     const characterId = genId();
     pony.options = {};
     const partial = Object.assign({ accountId,
-        characterId, ignores: new Set(), hides: new Set(), permaHides: new Set(), friends: new Set(), accountSettings: {}, originalRequest: { headers: {} }, account: { id: accountId, _id: mongoose_1.Types.ObjectId(accountId), ignores: [] }, character: { id: characterId, _id: mongoose_1.Types.ObjectId(characterId) }, isMod: false, pony, map: serverMap_1.createServerMap('', 0, 1, 1), notifications: [], regions: [], updateQueue: ag_sockets_1.createBinaryWriter(128), regionUpdates: [], unsubscribes: [], subscribes: [], saysQueue: [], lastSays: [], lastAction: 0, lastBoopAction: 0, lastExpressionAction: 0, viewWidth: 3, viewHeight: 3, screenSize: { width: 20, height: 20 }, reporter: mockReporter(), camera: camera_1.createCamera(), reportInviteLimit() { },
+        characterId, ignores: new Set(), hides: new Set(), permaHides: new Set(), friends: new Set(), accountSettings: {}, originalRequest: { headers: {} }, account: { id: accountId, _id: mongoose_1.Types.ObjectId(accountId), ignores: [] }, character: { id: characterId, _id: mongoose_1.Types.ObjectId(characterId) }, isMod: false, pony, map: serverMap_1.createServerMap('', 0, 1, 1), notifications: [], regions: [], updateQueue: ag_sockets_1.createBinaryWriter(128), regionUpdates: [], unsubscribes: [], subscribes: [], saysQueue: [], lastSays: [], lastBoopAction: 0, lastExpressionAction: 0, viewWidth: 3, viewHeight: 3, screenSize: { width: 20, height: 20 }, reporter: mockReporter(), camera: camera_1.createCamera(), reportInviteLimit() { },
         disconnect() { } }, fields);
     const client = mock(clientActions_1.ClientActions, partial);
     client.pony.client = client;

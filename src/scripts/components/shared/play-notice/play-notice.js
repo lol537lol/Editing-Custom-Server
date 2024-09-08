@@ -6,7 +6,7 @@ const data_1 = require("../../../client/data");
 const constants_1 = require("../../../common/constants");
 let PlayNotice = class PlayNotice {
     constructor() {
-        this.patreonLink = data_1.supporterLink;
+        this.discordLink = data_1.discordLink;
         this.rules = constants_1.GENERAL_RULES;
     }
 };

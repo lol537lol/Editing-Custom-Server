@@ -1,4 +1,4 @@
-﻿nav.navbar.navbar-expand.justify-content-end(role="navigation")
+nav.navbar.navbar-expand.justify-content-end(role="navigation")
 	.d-none.d-md-block
 		a.pixelart.logo(*ngIf="logo" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }")
 			img.pixelart.logo-large(revSrc="images/logo-large.png" alt="Pony Town" width="287" height="65")
@@ -36,6 +36,9 @@
 					a.dropdown-item(routerLink="/account" (click)="dropdown.close()" tabindex)
 						| Account settings
 						fa-icon.text-danger.ml-1(*ngIf="showAccountAlert" [icon]="alertIcon" aria-hidden="true")
+					a.dropdown-item((click)="openSettings(settingsModal)").mb-1
+						fa-icon.mr-2([icon]="cogIcon" [fixedWidth]="true")
+						| Open game settings
 					.dropdown-divider
 					button.dropdown-item((click)="signOut.emit(); dropdown.close()")
 						| Sign out

@@ -137,7 +137,19 @@ function boopAction(game) {
 }
 exports.boopAction = boopAction;
 function turnHeadAction(game) {
-    if (game.player && game.send(server => server.action(2 /* TurnHead */))) {
+    if (!game.player) {
+        return;
+    }
+    if (game.player.animator.state) {
+        const disabledFrames = game.player.animator.state.animation.disableHeadTurnFrames;
+        if (disabledFrames > 0) {
+            const disabledTime = disabledFrames / game.player.animator.state.animation.fps;
+            if (disabledTime >= game.player.animator.time) {
+                return;
+            }
+        }
+    }
+    if (game.send(server => server.action(2 /* TurnHead */))) {
         game.player.state = game.player.state ^ 4 /* HeadTurned */;
         game.headTurnedOverride = utils_1.hasFlag(game.player.state, 4 /* HeadTurned */);
         game.onActionsUpdate.next();

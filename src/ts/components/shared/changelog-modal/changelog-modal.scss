@@ -1,0 +1,48 @@
+@import '../../../../styles/partials/variables';
+
+.modal-body {
+    min-height: 450px;
+    font-size: 16px;
+    background-color: $modal-content-bg; // Используем цвет фона из переменной
+    color: $body-color; // Цвет текста
+    border-radius: $border-radius-lg; // Скругленные углы
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); // Тень для глубины
+    padding: 20px; // Отступы внутри модального окна
+}
+
+.modal-header {
+    border-bottom: 2px solid $primary; // Цвет линии под заголовком
+    margin-bottom: 15px; // Отступ под заголовком
+}
+
+.modal-title {
+    font-size: 1.5rem; // Увеличенный размер заголовка
+    color: $headers-color; // Цвет заголовка
+}
+
+.changelog-gif {
+	display: block;
+	margin: 20px auto; // Отступы сверху и снизу
+	max-width: 100%; // Ограничение ширины для адаптивности
+	height: auto; // Автоматическая высота для сохранения пропорций
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end; // Выровнено по правому краю
+    padding-top: 15px; // Отступ сверху
+    border-top: 1px solid $border-color; // Граница сверху для разделения
+}
+
+.btn-wide {
+    min-width: 120px; // Ширина кнопки
+    background-color: $primary; // Синий фон для кнопки
+    color: white; // Белый текст на кнопке
+    border: none; // Удалить границу
+    border-radius: $border-radius-base; // Скругленные углы для кнопки
+    transition: background-color 0.3s; // Плавный переход цвета фона
+
+    &:hover {
+        background-color: darken($primary, 10%); // Темный синий при наведении
+    }
+}

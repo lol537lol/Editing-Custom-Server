@@ -27,7 +27,6 @@ exports.tails = createCompleteSets(sprites.tails, 3);
 exports.chest = createCompleteSets(sprites.chestAccessories, bodyFrames);
 exports.chestBehind = createCompleteSets(sprites.chestAccessoriesBehind, bodyFrames);
 exports.backAccessories = createCompleteSets(sprites.backAccessories, bodyFrames);
-sprites.neckAccessories.forEach(f => f && f.pop()); // TEMP: remove headphones
 exports.neckAccessories = createCompleteSets(sprites.neckAccessories, bodyFrames);
 exports.waistAccessories = createCompleteSets(sprites.waistAccessories, bodyFrames + 1);
 function frameType(sets, frame, type) {
@@ -122,9 +121,6 @@ function mergeSpriteSets(...sets) {
 }
 exports.backLegSleeves = sprites.backLegSleeves
     .map(sets => sets && [undefined, undefined, undefined, undefined, undefined, ...sets]);
-// TEMP: remove summer hat
-sprites.headAccessoriesBehind.pop();
-sprites.headAccessories.pop();
 exports.mergedManes = mergeSpriteSets(sprites.behindManes, sprites.topManes, sprites.frontManes);
 exports.mergedBackManes = mergeSpriteSets(sprites.backBehindManes, sprites.backFrontManes);
 exports.mergedFacialHair = mergeSpriteSets(sprites.facialHairBehind, sprites.facialHair);

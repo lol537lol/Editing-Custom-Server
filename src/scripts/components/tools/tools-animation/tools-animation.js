@@ -123,6 +123,12 @@ let ToolsAnimation = class ToolsAnimation {
             if (!this.playing) {
                 if (this.mode === 'body') {
                     this.state.animationFrame = this.frame;
+                    if (this.state.headAnimation) {
+                        const headFrames = this.state.headAnimation.frames.length;
+                        let headFrame = Math.floor(this.frame / this.state.animation.frames.length * headFrames);
+                        headFrame = Math.min(headFrame, headFrames - 1);
+                        this.state.headAnimationFrame = headFrame;
+                    }
                 }
                 else {
                     this.state.headAnimationFrame = this.frame;
@@ -377,9 +383,10 @@ let ToolsAnimation = class ToolsAnimation {
             }
         }
         else {
-            const animation = toHeadAnimation(this.headAnimation, true);
-            const compressed = animation.frames.map(compressHeadFrame);
-            console.log(JSON.stringify(compressed));
+            const frames = this.headAnimation.frames
+                .map(f => [f.duration, '[' + compressHeadFrame(f).join(', ') + ']'])
+                .map(([repeat, frame]) => repeat > 1 ? `...repeat(${repeat}, ${frame})` : frame);
+            console.log(`frames: [\n${frames.map(x => `\t${x}`).join(',\n')}\n]`);
         }
     }
     png(scale = 1) {
@@ -437,9 +444,10 @@ let ToolsAnimation = class ToolsAnimation {
     tick(delta) {
         if (this.playing) {
             this.time += delta;
-            if (this.mode === 'body') {
+            const isBodyMode = this.mode === 'body';
+            if (isBodyMode) {
                 if (this.state.animation) {
-                    const frame = this.time * this.state.animation.fps;
+                    const frame = Math.floor(this.time * this.state.animation.fps);
                     if (frame > this.state.animation.frames.length && !this.state.animation.loop) {
                         this.bodyAnimationPlaying = (this.bodyAnimationPlaying + 1) % this.bodyAnimationsToPlay.length;
                         this.state.animation = this.bodyAnimationsToPlay[this.bodyAnimationPlaying];
@@ -447,15 +455,14 @@ let ToolsAnimation = class ToolsAnimation {
                         this.time = 0;
                     }
                     else {
-                        this.state.animationFrame = Math.floor(frame) % this.state.animation.frames.length;
+                        this.state.animationFrame = frame % this.state.animation.frames.length;
                     }
                 }
             }
-            else {
-                if (this.state.headAnimation) {
-                    const frame = Math.floor(this.time * this.state.headAnimation.fps);
-                    this.state.headAnimationFrame = frame % this.state.headAnimation.frames.length;
-                }
+            if (this.state.headAnimation) {
+                const fps = this.state.headAnimation.fps;
+                const frame = Math.floor(this.time * fps) + (isBodyMode && !this.state.headAnimation.loop ? fps : 0);
+                this.state.headAnimationFrame = frame % this.state.headAnimation.frames.length;
             }
         }
     }
@@ -471,9 +478,10 @@ let ToolsAnimation = class ToolsAnimation {
         return this.storage.getJSON('tools-animations', {});
     }
     createAnimationSprites(scale) {
+        const isBodyMode = this.mode === 'body';
         const animation = toBodyAnimation(this.bodyAnimation, true, this.switch);
         const headAnimation = toHeadAnimation(this.headAnimation, true);
-        const frames = this.mode === 'body' ? animation.frames.length : headAnimation.frames.length;
+        const frames = isBodyMode ? animation.frames.length : headAnimation.frames.length;
         const buffer = canvasUtils_1.createCanvas(ponyWidth, ponyHeight);
         const batch = new contextSpriteBatch_1.ContextSpriteBatch(buffer);
         const info = ponyInfo_1.toPalette(this.pony.info);
@@ -487,8 +495,16 @@ let ToolsAnimation = class ToolsAnimation {
         for (let i = 0; i < frames; i++) {
             const x = i % cols;
             const y = Math.floor(i / cols);
+            let headFrame = 0;
+            if (isBodyMode) {
+                let animTime = i / animation.fps;
+                if (!headAnimation.loop) {
+                    animTime += 1;
+                }
+                headFrame = Math.floor(animTime * headAnimation.fps);
+            }
             batch.start(sprites.paletteSpriteSheet, 0);
-            ponyDraw_1.drawPony(batch, info, Object.assign({}, ponyHelpers_1.defaultPonyState(), { animation, animationFrame: this.mode === 'body' ? i : 0, headAnimation: this.mode === 'head' ? headAnimation : undefined, headAnimationFrame: this.mode === 'head' ? i : 0, blinkFrame: 1 }), ponyWidth / 2, ponyHeight - 10, options);
+            ponyDraw_1.drawPony(batch, info, Object.assign({}, ponyHelpers_1.defaultPonyState(), { animation, animationFrame: isBodyMode ? i : 0, headAnimation: headAnimation, headAnimationFrame: isBodyMode ? headFrame : i, blinkFrame: 1 }), ponyWidth / 2, ponyHeight - 10, options);
             batch.end();
             context.drawImage(buffer, x * ponyWidth, y * ponyHeight);
         }
@@ -559,6 +575,7 @@ function toBodyAnimation({ name, loop, fps, frames }, full, switchFarClose) {
         loop,
         fps,
         shadow,
+        disableHeadTurnFrames: 0,
         frames: lodash_1.flatMap(frames, f => utils_1.repeat(full ? f.duration : 1, {
             body: f.body,
             head: f.head,
@@ -580,7 +597,7 @@ function toBodyAnimation({ name, loop, fps, frames }, full, switchFarClose) {
             backLegY: switchFarClose ? f.backFarLegY : f.backLegY,
             backFarLegX: switchFarClose ? f.backLegX : f.backFarLegX,
             backFarLegY: switchFarClose ? f.backLegY : f.backFarLegY,
-        })),
+        }))
     };
 }
 function compressBodyFrame(f) {
@@ -591,7 +608,7 @@ function compressBodyFrame(f) {
         f.backLegX, f.backLegY, f.backFarLegX, f.backFarLegY,
     ], x => !x);
 }
-function fromHeadAnimation({ name, fps, loop, frames }, index) {
+function fromHeadAnimation({ name, fps, loop, properties, frames }, index) {
     const fs = [];
     frames.forEach(f => {
         const l = fs[fs.length - 1];
@@ -606,16 +623,26 @@ function fromHeadAnimation({ name, fps, loop, frames }, index) {
         builtin: true,
         fps,
         loop,
+        dontOpenEyes: utils_1.hasFlag(properties, 1 /* DontIncreaseEyeOpenness */),
+        dontCloseMouth: utils_1.hasFlag(properties, 2 /* DontDecreaseMouthOpenness */),
         name: `# builtin ${index.toString().padStart(2, '0')} # ${name}`,
         frames: fs,
     };
 }
-function toHeadAnimation({ name, frames, fps, loop }, full) {
+function toHeadAnimation({ name, frames, fps, loop, dontOpenEyes, dontCloseMouth }, full) {
     const fs = (full && !loop) ? utils_1.repeat(fps, createDefaultHeadFrame()).concat(frames) : frames;
+    let properties = 0 /* None */;
+    if (dontOpenEyes) {
+        properties |= 1 /* DontIncreaseEyeOpenness */;
+    }
+    if (dontCloseMouth) {
+        properties |= 2 /* DontDecreaseMouthOpenness */;
+    }
     return {
         name,
         fps,
         loop,
+        properties,
         frames: lodash_1.flatMap(fs, f => utils_1.repeat(full ? f.duration : 1, f)),
     };
 }
@@ -672,6 +699,7 @@ function fixHeadAnimation(a) {
         fps: a.fps || 24,
         loop: a.loop || false,
         lockEyes: a.lockEyes || false,
+        dontOpenEyes: a.dontOpenEyes || false,
         frames: (a.frames || []).map(fixHeadFrame),
     };
 }

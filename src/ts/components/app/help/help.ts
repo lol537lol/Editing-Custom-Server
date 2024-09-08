@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 import { emojis } from '../../../client/emoji';
 import { faArrowLeft, faArrowRight, faArrowUp, faArrowDown } from '../../../client/icons';
-import { contactEmail } from '../../../client/data';
+import { contactEmail, contactDiscord } from '../../../client/data';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
 	selector: 'help',
@@ -16,4 +17,16 @@ export class Help {
 	readonly emotes = emojis.map(e => e.names[0]);
 	readonly mac = /Macintosh/.test(navigator.userAgent);
 	readonly contactEmail = contactEmail;
+	readonly contactDiscord = contactDiscord;
+
+	// allow scrolling to #issues and #rules fragments
+
+	constructor(private route: ActivatedRoute) {}
+
+	ngAfterViewInit() {
+		this.route.fragment.subscribe(f => {
+		  const element = document.querySelector("#" + f);
+		  if (element) setTimeout(() => element.scrollIntoView(), 10);
+		})
+	}
 }

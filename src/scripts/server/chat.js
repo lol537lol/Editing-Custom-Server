@@ -89,7 +89,7 @@ exports.createSay = (world, runCommand, log, checkSpam, reportSwears, reportForb
             }
         }
         else {
-            const expression = expressionUtils_1.parseExpression(text.substr(1));
+            const expression = expressionUtils_1.parseExpression(text.substr(1), true);
             if (expression) {
                 playerUtils_1.setEntityExpression(client.pony, expression);
             }

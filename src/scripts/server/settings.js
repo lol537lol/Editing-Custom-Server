@@ -15,8 +15,20 @@ async function loadSettings() {
         const json = await fs_1.readFileAsync(settingsPath, 'utf8');
         return JSON.parse(json);
     }
-    catch (_a) {
-        return {};
+    catch (e) {
+        if (e.code === 'ENOENT') {
+            try {
+                await fs_1.mkdirAsync(paths.pathTo('settings'));
+            }
+            catch (e2) {
+                if (e2.code !== 'EEXIST')
+                    throw e;
+            }
+        }
+        else {
+            console.error('Error reading settings file: ' + e);
+        }
+        return utils_1.cloneDeep(defaultSettings);
     }
 }
 exports.loadSettings = loadSettings;

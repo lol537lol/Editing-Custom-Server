@@ -1,0 +1,21 @@
+.modal-header.d-none.d-sm-block.d-none-for-low-height
+    button.close((click)="closeModal()") &times;
+    h4.modal-title(labelledBy=".modal")
+        | Changelog
+
+.modal-body
+    .col-lg-5
+        h2 Changelog
+        img.text-center.changelog-gif(src="/assets/images/changelog.gif" alt="Changelog Animation")
+        h3 Добро пожаловать в версию 1.55.0! В этом обновлении мы добавили для вас новые аксессуары для редактора!
+        ul
+            li Добавлено 4 новые шляпы
+            li Добавлено 2 новых паттерн для #35 гривы
+            li Добавлено 2 ушных аксессуара
+            li Исправлены мелкие баги
+            li Пример
+
+.modal-footer.d-flex
+    .flex-grow-1
+    button.btn.btn-wide.btn-outline-secondary((click)="closeModal()")
+        | Close and Continue!

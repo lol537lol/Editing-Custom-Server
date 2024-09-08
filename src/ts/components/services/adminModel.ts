@@ -502,21 +502,17 @@ export class AdminModel {
 			.then(() => this.updateState())
 			.catch(this.handleError);
 	}
-	resetSupporter(accountId: string) {
-		return this.server.resetSupporter(accountId)
-			.catch(this.handleError);
-	}
-	getLastPatreonData() {
-		return this.server.getLastPatreonData()
-			.catch(this.handleError);
-	}
-	updatePastSupporters() {
-		return this.server.updatePastSupporters()
-			.catch(this.handleError);
-	}
 	// other
 	getTimings(server: string) {
 		return this.server.getTimings(server)
+			.catch(this.handleError);
+	}
+	setTimingEnabled(server: string, isEnabled: boolean) {
+		return this.server.setTimingEnabled(server, isEnabled)
+			.catch(this.handleError);
+	}
+	getWorldPerfStats(server: string) {
+		return this.server.getWorldPerfStats(server)
 			.catch(this.handleError);
 	}
 	teleportTo(accountId: string) {
@@ -569,7 +565,7 @@ export class AdminModel {
 		const count = this.events.reduce((sum, e) => sum + (e.deleted ? 0 : 1), 0);
 		const inred = this.events.reduce((sum, e) => sum + ((!e.deleted && e.count > 9) ? 1 : 0), 0);
 		const flag = this.isLowDiskSpace || this.isLowMemory || this.isOldCertificate || this.isOldPatreon;
-		document.title = `${ponies} | ${count}${repeat('!', inred)}${flag ? ' 🚩' : ''}${!this.connected ? ' ⚠' : ''} | Pony Town`;
+		document.title = `${ponies} | ${count}${repeat('!', inred)}${flag ? ' 🚩' : ''}${!this.connected ? ' ⚠' : ''} | pixel.horse`;
 	}
 	private notify(title: string, body: string) {
 		if (this.notifications && notification.permission === 'granted') {

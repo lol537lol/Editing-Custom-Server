@@ -17,6 +17,13 @@ exports.boopingSitting = animator_1.animatorState(n('booping-sitting'), ponyAnim
 exports.boopingLying = animator_1.animatorState(n('booping-lying'), ponyAnimations_1.boopLie);
 exports.boopingFlying = animator_1.animatorState(n('booping-flying'), ponyAnimations_1.boopFly, { bug: ponyAnimations_1.boopFlyBug });
 exports.boopingSwimming = animator_1.animatorState(n('booping-swimming'), ponyAnimations_1.boopSwim);
+exports.kissing = animator_1.animatorState(n('kissing'), ponyAnimations_1.kissBody);
+exports.kissingHoof = animator_1.animatorState(n('kissing'), ponyAnimations_1.kissLiftHoofBody);
+exports.kissingFlying = animator_1.animatorState(n('kissing-flying'), ponyAnimations_1.kissFlyBody, { bug: ponyAnimations_1.kissFlyBugBody });
+exports.kissingLying = animator_1.animatorState(n('kissing-lying'), ponyAnimations_1.kissLieBody);
+exports.kissingSitting = animator_1.animatorState(n('kissing-sitting'), ponyAnimations_1.kissSitBody);
+exports.kissingSwimming = animator_1.animatorState(n('kissing-swimming'), ponyAnimations_1.kissSwimBody);
+exports.kissingToTrotting = animator_1.animatorState(n('sitting-to-trotting'), ponyAnimations_1.kissToTrot);
 exports.sitting = animator_1.animatorState(n('sitting'), ponyAnimations_1.sit);
 exports.sittingDown = animator_1.animatorState(n('sitting-down'), ponyAnimations_1.sitDown);
 exports.standingUp = animator_1.animatorState(n('standing-up'), ponyAnimations_1.standUp);
@@ -38,7 +45,8 @@ exports.ponyStates = [
     exports.sitting, exports.sittingDown, exports.standingUp, exports.sittingToTrotting,
     exports.lying, exports.lyingDown, exports.sittingUp, exports.lyingToTrotting,
     exports.hovering, exports.flying, exports.flyingUp, exports.flyingDown, exports.trottingToFlying, exports.flyingToTrotting,
-    exports.swinging, exports.swimmingToFlying, exports.flyingToSwimming, exports.boopingSwimming,
+    exports.swinging, exports.swimmingToFlying, exports.flyingToSwimming, exports.boopingSwimming, exports.kissing, exports.kissingHoof,
+    exports.kissingFlying, exports.kissingLying, exports.kissingSitting, exports.kissingSwimming, exports.kissingToTrotting
 ];
 animator_1.animatorTransition(exports.hovering, exports.flyingDown, { exitAfter: 0 });
 animator_1.animatorTransition(exports.flyingDown, exports.standing);
@@ -87,7 +95,23 @@ animator_1.animatorTransition(exports.boopingLying, exports.lying);
 animator_1.animatorTransition(exports.lying, exports.boopingLying, { exitAfter: 0 });
 animator_1.animatorTransition(exports.boopingFlying, exports.hovering, { enterTime: 1.1 / 10 });
 animator_1.animatorTransition(exports.hovering, exports.boopingFlying, { exitAfter: 0 });
-// transition(anyState, trottingToSwimming, { exitAfter: 0 });
+animator_1.animatorTransition(exports.kissingSwimming, exports.swimming);
+animator_1.animatorTransition(exports.swimming, exports.kissingSwimming, { exitAfter: 0 });
+animator_1.animatorTransition(exports.kissing, exports.standing);
+animator_1.animatorTransition(exports.standing, exports.kissing, { exitAfter: 0 });
+animator_1.animatorTransition(exports.kissingHoof, exports.standing);
+animator_1.animatorTransition(exports.standing, exports.kissingHoof, { exitAfter: 0 });
+animator_1.animatorTransition(exports.kissingFlying, exports.hovering, { enterTime: 1.1 / 10 });
+animator_1.animatorTransition(exports.hovering, exports.kissingFlying, { exitAfter: 0, onlyDirectTo: exports.kissingFlying });
+animator_1.animatorTransition(exports.kissing, exports.kissingToTrotting, { exitAfter: 0, onlyDirectTo: exports.trotting });
+animator_1.animatorTransition(exports.kissingToTrotting, exports.trotting);
+animator_1.animatorTransition(exports.kissingToTrotting, exports.standing);
+animator_1.animatorTransition(exports.kissingSitting, exports.sittingToTrotting, { exitAfter: 0, onlyDirectTo: exports.trotting });
+animator_1.animatorTransition(exports.kissingSitting, exports.sitting);
+animator_1.animatorTransition(exports.sitting, exports.kissingSitting, { exitAfter: 0, onlyDirectTo: exports.kissingSitting });
+animator_1.animatorTransition(exports.kissingLying, exports.lyingToTrotting, { exitAfter: 0, onlyDirectTo: exports.trotting });
+animator_1.animatorTransition(exports.kissingLying, exports.lying);
+animator_1.animatorTransition(exports.lying, exports.kissingLying, { exitAfter: 0, onlyDirectTo: exports.kissingLying });
 animator_1.animatorTransition(animator_1.anyState, exports.trotting, { exitAfter: 0, keepTime: true });
 animator_1.animatorTransition(animator_1.anyState, exports.flying, { exitAfter: 0, keepTime: true });
 animator_1.animatorTransition(exports.standing, exports.swinging, { exitAfter: 0 });
@@ -102,7 +126,8 @@ function isFlyingDown(state) {
 exports.isFlyingDown = isFlyingDown;
 function isSwimmingState(state) {
     return state === exports.swimming || state === exports.trottingToSwimming || state === exports.swimmingToTrotting ||
-        state === exports.flyingToSwimming || state === exports.swimmingToFlying || state === exports.boopingSwimming;
+        state === exports.flyingToSwimming || state === exports.swimmingToFlying || state === exports.boopingSwimming ||
+        state === exports.kissingSwimming;
 }
 exports.isSwimmingState = isSwimmingState;
 function isFlyingUpOrDown(state) {
@@ -128,4 +153,15 @@ function toBoopState(state) {
     }
 }
 exports.toBoopState = toBoopState;
+function toKissState(state) {
+    switch (state) {
+        case exports.standing: return (Math.random() < 0.5 ? exports.kissing : exports.kissingHoof);
+        case exports.sitting: return exports.kissingSitting;
+        case exports.lying: return exports.kissingLying;
+        case exports.hovering: return exports.kissingFlying;
+        case exports.swimming: return exports.kissingSwimming;
+        default: return undefined;
+    }
+}
+exports.toKissState = toKissState;
 //# sourceMappingURL=ponyStates.js.map

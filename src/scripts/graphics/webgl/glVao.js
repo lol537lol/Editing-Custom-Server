@@ -33,6 +33,7 @@ class VAONative {
     }
     dispose() {
         this.ext.deleteVertexArrayOES(this.handle);
+        this.handle = {};
     }
     update(attributes, elements, elementsType) {
         this.bind();

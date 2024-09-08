@@ -1,26 +1,31 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const webgl_debug_1 = require("webgl-debug");
 const errors_1 = require("../../common/errors");
-function getRenderTargetSize(width, height) {
-    const max = Math.max(width, height);
-    let pow = 256;
-    while (pow < max) {
-        pow *= 2;
-    }
-    return pow;
-}
-exports.getRenderTargetSize = getRenderTargetSize;
 function getWebGLContext(canvas) {
     const options = {
         alpha: false,
+        preserveDrawingBuffer: false,
         premultipliedAlpha: false,
         antialias: false,
+        depth: false
     };
-    const gl = canvas.getContext('webgl2', options)
+    let gl = canvas.getContext('webgl2', options)
         || canvas.getContext('webgl', options)
         || canvas.getContext('experimental-webgl', options);
     if (!gl) {
         throw new Error(errors_1.WEBGL_CREATION_ERROR);
+    }
+    // debug context will check every GL call for errors and will
+    // emit a console message with a stack trace if there was an error,
+    // but it can slow execution down by more than 2x depending
+    // on the platform so it isn't on by default even in DEVELOPMENT
+    const useDebugContext = false;
+    if (useDebugContext) {
+        gl = webgl_debug_1.makeDebugContext(gl);
+        if (!gl) {
+            throw new Error(errors_1.WEBGL_CREATION_ERROR);
+        }
     }
     return gl;
 }
@@ -60,4 +65,13 @@ function unbindAllTexturesAndBuffers(gl) {
     }
 }
 exports.unbindAllTexturesAndBuffers = unbindAllTexturesAndBuffers;
+function clearWebGLErrors(gl) {
+    while (hasWebGLErrors(gl))
+        ;
+}
+exports.clearWebGLErrors = clearWebGLErrors;
+function hasWebGLErrors(gl) {
+    return gl.getError() !== gl.NO_ERROR;
+}
+exports.hasWebGLErrors = hasWebGLErrors;
 //# sourceMappingURL=webglUtils.js.map

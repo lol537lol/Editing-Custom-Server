@@ -31,6 +31,10 @@ exports.OUTLINE_COLOR = color_1.withAlphaFloat(exports.BLACK, 0.4);
 exports.PATREON_COLOR = 0xf86754ff;
 exports.WHISPER_COLOR = 0xffa1dfff;
 exports.FRIENDS_COLOR = 0x71ff7fff;
+//custom tags
+exports.OP_COLOR = 0x8958ffff;
+exports.CONTRIBUTOR_COLOR = 0xb5dfb9ff;
+exports.NPC_COLOR = 0xdfdcb5ff;
 exports.SUPPORTER1_COLOR = exports.PATREON_COLOR;
 exports.SUPPORTER2_COLOR = 0xffa32bff;
 exports.SUPPORTER3_COLOR = 0xffcf00ff;

@@ -7,41 +7,10 @@ const logger_1 = require("./logger");
 const db_1 = require("./db");
 const serverUtils_1 = require("./serverUtils");
 const constants_1 = require("../common/constants");
-const patreon_1 = require("./patreon");
-const reporter_1 = require("./reporter");
 const internal_1 = require("./internal");
 const paths = require("./paths");
 const supporterInvites_1 = require("./services/supporterInvites");
 const origins_1 = require("./api/origins");
-const config_1 = require("./config");
-let updatingPatreonPromise;
-async function updatePatreonDataInternal(server, accessToken) {
-    try {
-        const removeOldSupporters = patreon_1.createRemoveOldSupporters(db_1.updateAccounts, logger_1.system);
-        const updateSupporters = patreon_1.createUpdateSupporters(db_1.updateAccount, logger_1.system);
-        const addTotalPledged = patreon_1.createAddTotalPledged(db_1.updateAuth);
-        const updatePatreonInfo = patreon_1.createUpdatePatreonInfo(db_1.queryAuths, db_1.queryAccounts, removeOldSupporters, updateSupporters, addTotalPledged);
-        const client = patreon_1.createPatreonClient(accessToken);
-        const data = await patreon_1.fetchPatreonData(client, logger_1.logPatreon);
-        await updatePatreonInfo(data, new Date());
-        internal_1.serverStatus.lastPatreonUpdate = (new Date()).toISOString();
-    }
-    catch (e) {
-        const message = e.error ? (e.error.message || e.error.statusText || `${e}`) : e.message;
-        const stack = (e.error ? e.error.stack : e.stack) || '';
-        reporter_1.create(server).danger('Patreon update failed', `${message}\n${stack}`.trim());
-        logger_1.logger.error(e);
-    }
-    finally {
-        updatingPatreonPromise = undefined;
-    }
-}
-async function updatePatreonData(server, { patreonToken }) {
-    if (patreonToken && config_1.config.supporterLink) {
-        return updatingPatreonPromise = updatingPatreonPromise || updatePatreonDataInternal(server, patreonToken);
-    }
-}
-exports.updatePatreonData = updatePatreonData;
 async function clearOldIgnores() {
     const start = Date.now();
     await db_1.updateAccounts({
@@ -175,10 +144,6 @@ function pollServers() {
     return poll(() => Promise.all([...internal_1.loginServers, ...internal_1.servers].map(updateServerState)), 1 * constants_1.SECOND);
 }
 exports.pollServers = pollServers;
-function pollPatreon(server, settings) {
-    return poll(() => updatePatreonData(server, settings), 10 * constants_1.MINUTE);
-}
-exports.pollPatreon = pollPatreon;
 exports.pollDiskSpace = () => pollImmediate(() => serverUtils_1.getDiskSpace().then(value => internal_1.serverStatus.diskSpace = value), constants_1.HOUR);
 exports.pollMemoryUsage = () => pollImmediate(() => serverUtils_1.getMemoryUsage().then(value => internal_1.serverStatus.memoryUsage = value), 10 * constants_1.MINUTE);
 exports.pollCertificateExpirationDate = () => pollImmediate(() => serverUtils_1.getCertificateExpirationDate().then(value => internal_1.serverStatus.certificateExpiration = value), constants_1.HOUR);

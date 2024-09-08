@@ -31,7 +31,7 @@ const ICON_SIZE = 16;
 const headX = -26;
 const headY = -30;
 const headlessBoopFrame = Object.assign({}, utils_1.cloneDeep(ponyAnimations_1.boop.frames[7]), { head: 0 });
-const headlessBoop = { name: '', loop: false, fps: 1, frames: [headlessBoopFrame] };
+const headlessBoop = { name: '', loop: false, fps: 1, frames: [headlessBoopFrame], disableHeadTurnFrames: 0 };
 function createPony(coatColor, wings = false, horn = false) {
     const info = ponyInfo_1.createDefaultPony();
     info.coatFill = coatColor;
@@ -97,14 +97,16 @@ const actionActions = [
     actionButtonAction('yawn', 'Yawn', 3 /* Yawn */),
     actionButtonAction('love', 'Love', 18 /* Love */),
     actionButtonAction('laugh', 'Laugh', 4 /* Laugh */),
+    actionButtonAction('excite', 'Excite', 34 /* Excite */),
     actionButtonAction('blush', 'Blush', 16 /* Blush */),
     actionButtonAction('drop', 'Drop item', 14 /* Drop */),
     actionButtonAction('drop-toy', 'Drop toy', 15 /* DropToy */),
     actionButtonAction('magic', 'Magic', 26 /* Magic */),
-    actionButtonAction('switch-tool', 'Switch tool', 29 /* SwitchTool */),
+    actionButtonAction('switch-tool', 'Switch tool', 30 /* SwitchTool */),
     actionButtonAction('switch-entity', 'Switch item to place'),
     actionButtonAction('switch-entity-rev', 'Switch item to place (reverse)'),
     actionButtonAction('switch-tile', 'Switch tile to place'),
+    actionButtonAction('kiss', 'Kiss', 27 /* Kiss */),
 ];
 const commandActions = [
     commandButtonAction('/roll', '🎲'),
@@ -267,15 +269,15 @@ function useAction(game, action) {
                             playerActions_1.turnHeadAction(game);
                             break;
                         case 'switch-entity':
-                            game.send(server => server.action(31 /* SwitchToPlaceTool */));
+                            game.send(server => server.action(32 /* SwitchToPlaceTool */));
                             game.changePlaceEntity(false);
                             break;
                         case 'switch-entity-rev':
-                            game.send(server => server.action(31 /* SwitchToPlaceTool */));
+                            game.send(server => server.action(32 /* SwitchToPlaceTool */));
                             game.changePlaceEntity(true);
                             break;
                         case 'switch-tile':
-                            game.send(server => server.action(32 /* SwitchToTileTool */));
+                            game.send(server => server.action(33 /* SwitchToTileTool */));
                             game.changePlaceTile(false);
                             break;
                         default:
@@ -358,7 +360,7 @@ function drawAction(canvas, action, state, game) {
                 const buffer = contextSpriteBatch_1.drawCanvas(bufferSize, bufferSize, sprites.paletteSpriteSheet, undefined, batch => {
                     const state = Object.assign({}, createState(), { expression: action.expression });
                     const options = Object.assign({}, ponyHelpers_1.defaultDrawPonyOptions(), { noEars: true });
-                    ponyDraw_1.drawHead(batch, expressionPony, headX, headY, undefined, ponyAnimations_1.defaultHeadFrame, state, options, false, 0);
+                    ponyDraw_1.drawHead(batch, expressionPony, headX, headY, undefined, ponyAnimations_1.defaultHeadFrame, 0 /* None */, state, options, false, 0);
                     if (action.expression) {
                         const extra = action.expression.extra;
                         if (utils_1.hasFlag(extra, 2 /* Zzz */)) {
@@ -430,6 +432,11 @@ function drawAction(canvas, action, state, game) {
                                 ponyDraw_1.drawPony(batch, actionPony, state, 17, 40, ponyHelpers_1.defaultDrawPonyOptions());
                                 break;
                             }
+                            case 'excite': {
+                                const state = Object.assign({}, createState(), { headAnimation: ponyAnimations_1.excite, headAnimationFrame: 3 });
+                                ponyDraw_1.drawPony(batch, actionPony, state, 17, 40, ponyHelpers_1.defaultDrawPonyOptions());
+                                break;
+                            }
                             case 'sleep': {
                                 const state = Object.assign({}, createState(), { expression: clientUtils_1.createExpression(6 /* Closed */, 6 /* Closed */, 2 /* Neutral */) });
                                 ponyDraw_1.drawPony(batch, actionPony, state, 18, 40, ponyHelpers_1.defaultDrawPonyOptions());
@@ -472,6 +479,11 @@ function drawAction(canvas, action, state, game) {
                                 const state = Object.assign({}, createState(), { headAnimation: ponyAnimations_1.laugh, headAnimationFrame: 3 });
                                 ponyDraw_1.drawPony(batch, actionPonyWithHorn, state, 17, 48, ponyHelpers_1.defaultDrawPonyOptions());
                                 batch.drawSprite(sprites.magic_icon, colors_1.WHITE, defaultPalette, 4, 2);
+                                break;
+                            }
+                            case 'kiss': {
+                                const state = Object.assign({}, createState(), { headAnimation: ponyAnimations_1.kiss, headAnimationFrame: 9 });
+                                ponyDraw_1.drawPony(batch, actionPony, state, 17, 40, ponyHelpers_1.defaultDrawPonyOptions());
                                 break;
                             }
                             case 'switch-tool': {

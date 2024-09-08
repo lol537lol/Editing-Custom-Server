@@ -43,7 +43,7 @@ code {
 	padding: 4px 6px;
 }
 
-.badge-dev, .badge-mod {
+.badge-dev, .badge-mod, .badge-op, .badge-npc, .badge-contr {
 	text-transform: uppercase;
 }
 
@@ -61,6 +61,18 @@ code {
 
 .badge-mod {
 	@include badge-variant($mod);
+}
+
+.badge-op {
+	@include badge-variant($op);
+}
+
+.badge-npc {
+	@include badge-variant($npc);
+}
+
+.badge-contr {
+	@include badge-variant($contr);
 }
 
 .badge-forbidden {

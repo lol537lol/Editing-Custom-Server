@@ -31,6 +31,18 @@ export function isDev(account: AccountRoles): boolean {
 	return hasRole(account, 'dev');
 }
 
+export function isCont(account: AccountRoles): boolean {
+	return hasRole(account, 'contr');
+}
+
+export function isNpc(account: AccountRoles): boolean {
+	return hasRole(account, 'npc');
+}
+
+export function isOp(account: AccountRoles): boolean {
+	return hasRole(account, 'op');
+} //operator tag
+
 export function meetsRequirement(account: AccountSupporter, require: string | undefined): boolean {
 	return !require || hasRole(account, require) || meetsSupporterRequirement(account, require);
 }

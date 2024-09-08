@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ITEM_LIMIT = 1000;
-exports.ROLES = ['superadmin', 'admin', 'mod', 'dev'];
+exports.ROLES = ['superadmin', 'admin', 'mod', 'dev', 'op', 'contr', 'npc']; //кнопки для выдачи тега (роли)
 exports.SERVER_LABELS = {
     'dev': 'badge-test',
     'test': 'badge-test',
@@ -118,4 +118,11 @@ var TimingEntryType;
     TimingEntryType[TimingEntryType["Start"] = 0] = "Start";
     TimingEntryType[TimingEntryType["End"] = 1] = "End";
 })(TimingEntryType = exports.TimingEntryType || (exports.TimingEntryType = {}));
+function defaultWorldPerfStats() {
+    return { lastUpdateTime: 0, maxUpdateTime: 0, minUpdateTime: 0, avgUpdateTime: 0, isSamplingEnabled: false,
+        clients: 0, movingEntities: 0, regionsCount: 0, mapsCount: 0, clientQueue: 0, controllersCount: 0,
+        clientsWithAdds: 0, clientsWithUpdates: 0, clientsWithSays: 0, totalSays: 0, sent: 0, received: 0,
+        sentPackets: 0, receivedPackets: 0 };
+}
+exports.defaultWorldPerfStats = defaultWorldPerfStats;
 //# sourceMappingURL=adminInterfaces.js.map

@@ -190,7 +190,7 @@ function authRoutes(host, server, settings, live, mockLogin, removedDocument) {
     };
     oauth_1.providers.filter(p => !!p.auth).forEach(({ id, strategy, auth, connectOnly, additionalOptions = {} }) => {
         const callbackURL = `${host}auth/${id}/callback`;
-        const scope = id === 'patreon' ? ['users'] : ['email'];
+        const scope = id === 'patreon' ? ['users'] : id === 'discord' ? ['identify', 'email'] : ['email'];
         const options = Object.assign({}, additionalOptions, auth, { callbackURL, includeEmail: true, profileFields: ['id', 'displayName', 'name', 'emails'], passReqToCallback: true });
         async function signInOrSignUp(req, profile) {
             const user = req.user;

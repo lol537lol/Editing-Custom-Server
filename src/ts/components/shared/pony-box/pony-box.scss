@@ -41,6 +41,19 @@
 		background: $mod;
 	}
 
+	&.tag-op {
+		background: $op;
+		color: #fff;
+	}
+
+	&.tag-contr {
+		background: $contr;
+	}
+
+	&.tag-npc {
+		background: $npc;
+	}
+
 	&.tag-sup1 {
 		background: $supporter-1;
 	}

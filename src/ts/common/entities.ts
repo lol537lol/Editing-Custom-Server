@@ -22,7 +22,7 @@ import { mockPaletteManager } from './ponyInfo';
 const entities: EntityDescriptor[] = [];
 
 export function createBaseEntity(type: number, id: number, x: number, y: number): Entity {
-	return { id, type, x, y, z: 0, vx: 0, vy: 0, order: 0, state: 0, playerState: 0, flags: 0, timestamp: 0 };
+	return { id, type, x, y, z: 0, vx: 0, vy: 0, depth: 0, order: 0, state: 0, playerState: 0, flags: 0, timestamp: 0 };
 }
 
 function createEntity(
@@ -154,12 +154,14 @@ function mixOrder(order: number): MixinEntity {
 
 const collectableInteractive = mixInteract(-8, -12, 16, 16, 1.5);
 
+// entity with centered sprite and larger clickable area
 function collectable(name: string, sprite: PaletteRenderable, paletteIndex = 0, ...other: MixinEntity[]) {
 	return doodad(name, sprite, Math.floor(sprite.color!.w / 2), sprite.color!.h - 1, paletteIndex,
 		collectableInteractive,
 		...other);
 }
 
+// for ground details. puts origin point on the top of sprite, so you always go on top of it. collectables are able to spawn overlapping decals
 function decal(name: string, sprite: PaletteRenderable, palette = 0, ...other: MixinEntity[]) {
 	return registerMix(name,
 		mixDraw(sprite, Math.floor((sprite.color!.w + sprite.color!.ox) / 2), sprite.color!.oy, palette),
@@ -174,6 +176,7 @@ function decalOffset(name: string, sprite: PaletteRenderable, dx: number, dy: nu
 		...other);
 }
 
+// for decorative objects
 function doodad(
 	name: string, sprite: PaletteRenderable, ox: number, oy: number, palatte = 0, ...other: (MixinEntity | undefined)[]
 ) {
@@ -358,6 +361,17 @@ const lemonPickable = mixPickable(31, 45);
 export const lemon = collectable(n('lemon'), sprites.lemon_1, 0, lemonPickable);
 export const lime = collectable(n('lime'), sprites.lemon_1, 1, lemonPickable);
 
+//грибы mushroom
+
+const mushroomPalette = 1;
+export const mushroom1 = doodad(n('mushroom-1'), sprites.mushroom_1, 4, 9, mushroomPalette);
+export const mushroom2 = doodad(n('mushroom-2'), sprites.mushroom_2, 4, 9, mushroomPalette);
+export const mushroom3 = doodad(n('mushroom-3'), sprites.mushroom_3, 4, 9, mushroomPalette);
+export const mushroom4 = doodad(n('mushroom-4'), sprites.mushroom_4, 4, 9, mushroomPalette);
+export const mushroom5 = doodad(n('mushroom-5'), sprites.mushroom_5, 4, 9, mushroomPalette);
+
+//carrot основа
+
 const carrotPalette = 1;
 export const carrot1 = doodad(n('carrot-1'), sprites.carrot_1, 4, 9, carrotPalette, collectableInteractive);
 export const carrot1b = doodad(n('carrot-1b'), sprites.carrot_1b, 4, 9, carrotPalette, collectableInteractive);
@@ -490,6 +504,7 @@ export const candy = doodad(n('candy'), sprites.candy, 4, 2, 0,
 	mixInteract(-6, -6, 13, 13, 1.5));
 
 const eggInteractive = mixInteract(-6, -6, 13, 13, 1.5);
+
 
 export const eggs = [
 	// upright
@@ -806,11 +821,6 @@ export const rock2B = doodad(n('rock-2b'), sprites.rock_2, 11, 11, 1,
 export const rock3B = doodad(n('rock-3b'), sprites.rock_3, 10, 11, 1,
 	mixColliderRounded(-10, -4, 18, 5, 2, false),
 	rockMinimap);
-
-// other
-
-export const well = doodad(n('well'), sprites.well, 30, 67, 0,
-	mixColliderRect(-26, -20, 54, 30));
 
 // water rocks
 
@@ -1178,11 +1188,17 @@ export const sandPileBig = doodad(n('sandpile-big'), sprites.snowpile_big, 43, 2
 
 // pumpkins
 
+const pumpkinOffOnSprites: AnimatedRenderable = {frames: [sprites.pumpkin_off.color, sprites.pumpkin_on.color],
+	palette: sprites.pumpkin_on.palettes![0],
+	shadow: sprites.pumpkin_on.shadow};
+const pumpkinLightSprite: AnimatedRenderable1 = {frames: [undefined, sprites.pumpkin_light]};
 const pumpkinCollider = mixColliderRounded(-11, -6, 22, 12, 5, false);
 const pumpkinPickable = mixPickable(26, 50);
 const pumpkinParts = [pumpkinCollider, pumpkinPickable];
 const pumpkinDX = 11;
 const pumpkinDY = 15;
+const pumpkinAnimOff = [0];
+const pumpkinAnimOn = [1];
 
 export const pumpkin = doodad(n('pumpkin'), sprites.pumpkin_default, pumpkinDX, pumpkinDY, 0,
 	...pumpkinParts);
@@ -1195,11 +1211,20 @@ export const jackoOn = doodad(n('jacko-on'), sprites.pumpkin_on, pumpkinDX, pump
 	mixLight(jackoLightColor, 0, 0, 256, 192),
 	mixLightSprite(sprites.pumpkin_light, WHITE, pumpkinDX, pumpkinDY));
 
-export const jacko = doodad(n('jacko'), sprites.pumpkin_on, pumpkinDX, pumpkinDY, 0,
+export const jacko = registerMix(n('jacko'),
+	mixAnimation(pumpkinOffOnSprites, 8, pumpkinDX, pumpkinDY, {
+		lightSprite: pumpkinLightSprite,
+		animations: [pumpkinAnimOff, pumpkinAnimOn],
+	}),
+	...pumpkinParts,
+	mixLight(jackoLightColor, 0, 0, 256, 192),
+	mixFlags(EntityFlags.OnOff));
+
+/*export const jacko = doodad(n('jacko'), sprites.pumpkin_on, pumpkinDX, pumpkinDY, 0,
 	...pumpkinParts,
 	mixLight(jackoLightColor, 0, 0, 256, 192),
 	mixLightSprite(sprites.pumpkin_light, WHITE, pumpkinDX, pumpkinDY),
-	mixFlags(EntityFlags.OnOff));
+	mixFlags(EntityFlags.OnOff));*/
 
 // tombstones
 
@@ -1552,7 +1577,7 @@ const cloudSprite = sprites.cloud.shadow;
 
 export const cloud = registerMix(n('cloud'),
 	mixDrawShadow(sprites.cloud, Math.floor(cloudSprite.w / 2), cloudSprite.h, CLOUD_SHADOW_COLOR),
-	mixFlags(EntityFlags.Decal | EntityFlags.Movable));
+	mixFlags(EntityFlags.StaticY | EntityFlags.Decal | EntityFlags.Movable));
 
 // vegetation
 
@@ -2360,10 +2385,14 @@ export const fruits = [
 ];
 
 export const tools = [
-	{ type: saw.type, text: 'Saw: place & remove walls' },
-	{ type: broom.type, text: 'Broom: remove furniture' },
-	{ type: hammer.type, text: 'Hammer: place furniture\nuse [mouse wheel] to switch item' },
-	{ type: shovel.type, text: 'Shovel: change floor\nuse [mouse wheel] to switch floor type' },
+	{ type: saw.type, text: 'Saw: place & remove walls', textMobile: undefined },
+	{ type: broom.type, text: 'Broom: remove furniture', textMobile: undefined },
+	{ type: hammer.type,
+		text: 'Hammer: place furniture\nuse [mouse wheel] to switch item',
+		textMobile: 'Hammer: place furniture\nuse [Switch item to place] action to switch item' },
+	{ type: shovel.type,
+		text: 'Shovel: change floor\nuse [mouse wheel] to switch floor type',
+		textMobile: 'Shovel: change floor\nuse [Switch tile to place] action to switch floor type' },
 ];
 
 export const candies1Types = [candyCane1, candyCane2, cookie, cookiePony].map(e => e.type);

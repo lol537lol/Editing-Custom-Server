@@ -1,5 +1,5 @@
 import { Component, Output, EventEmitter } from '@angular/core';
-import { faCog, faUserFriends, faUserPlus, faUserCog, faCircle } from '../../../client/icons';
+import { faCog, faUserFriends, faUserPlus, faUserCog, faCircle, faTimes, faTrash, faUsers, faUserMinus, faComment } from '@fortawesome/free-solid-svg-icons';
 import { Model, Friend } from '../../services/model';
 import { PonyTownGame } from '../../../client/game';
 import { PlayerAction, Action } from '../../../common/interfaces';
@@ -17,35 +17,50 @@ export class FriendsBox {
 	readonly addToPartyIcon = faUserPlus;
 	readonly userOptionsIcon = faUserCog;
 	readonly statusIcon = faCircle;
+	readonly cancelIcon = faTimes; // Иконка крестика для Cancel
+	readonly removeIcon = faTrash;
+	readonly inviteIcon = faUsers;
+	readonly removeFriendIcon = faUserMinus;
+	readonly sendWhisperIcon = faComment;
+
 	@Output() sendMessage = new EventEmitter<Friend>();
 	removing?: Friend;
-	constructor(private settings: SettingsService, private model: Model, private game: PonyTownGame) {
-	}
+
+	constructor(private settings: SettingsService, private model: Model, private game: PonyTownGame) {}
+
 	get friends() {
 		return this.model.friends;
 	}
+
 	get hidden() {
 		return !!this.settings.account.hidden;
 	}
+
 	toggleHidden() {
 		this.settings.account.hidden = !this.settings.account.hidden;
 		this.settings.saveAccountSettings(this.settings.account);
 	}
+
 	toggle() {
 		this.removing = undefined;
 	}
+
 	sendMessageTo(friend: Friend) {
 		this.sendMessage.emit(friend);
 	}
+
 	inviteToParty(friend: Friend) {
 		this.game.send(server => server.playerAction(friend.entityId, PlayerAction.InviteToParty, undefined));
 	}
+
 	remove(friend: Friend) {
 		this.removing = friend;
 	}
+
 	cancelRemove() {
 		this.removing = undefined;
 	}
+
 	confirmRemove() {
 		if (this.removing && this.model.friends) {
 			const { accountId } = this.removing;
@@ -54,6 +69,7 @@ export class FriendsBox {
 			this.removing = undefined;
 		}
 	}
+
 	setStatus(status: string) {
 		this.settings.account.hidden = status === 'invisible';
 		this.settings.saveAccountSettings(this.settings.account);

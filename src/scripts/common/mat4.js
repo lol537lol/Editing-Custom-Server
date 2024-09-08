@@ -9,7 +9,7 @@ function createMat4() {
     return out;
 }
 exports.createMat4 = createMat4;
-function ortho(out, left, right, bottom, top, near, far) {
+function ortho(out, left, right, bottom, top, near, far, transformZ) {
     const lr = 1 / (left - right);
     const bt = 1 / (bottom - top);
     const nf = 1 / (near - far);
@@ -29,6 +29,10 @@ function ortho(out, left, right, bottom, top, near, far) {
     out[13] = (top + bottom) * bt;
     out[14] = (far + near) * nf;
     out[15] = 1;
+    if (!transformZ) {
+        out[10] = 1;
+        out[14] = 0;
+    }
     return out;
 }
 exports.ortho = ortho;

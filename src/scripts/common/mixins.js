@@ -533,15 +533,15 @@ function mixLight(color, dx, dy, w, h) {
             base.lightScale = 1;
             base.lightTarget = 1;
             base.lightScaleAdjust = 1;
-            base.lightBounds = rect_1.rect(-(dx + w / 2), -(dy + h / 2), w, h);
+            const adjustedScale = base.lightScale * base.lightScaleAdjust * constants_1.LIGHT_VOLUME_SCALE;
+            base.lightBounds = rect_1.rect(-(dx + w / 2), -(dy + h / 2), w * adjustedScale, h * adjustedScale);
             base.drawLight = function (batch) {
                 if (!this.lightOn)
                     return;
                 const x = positionUtils_1.toScreenX(this.x);
                 const y = positionUtils_1.toScreenYWithZ(this.y, this.z);
-                const s = this.lightScale * this.lightScaleAdjust;
-                const width = w * s;
-                const height = h * s;
+                const width = w * adjustedScale;
+                const height = h * adjustedScale;
                 const color = this.lightColor;
                 batch.drawImage(color, -1, -1, 2, 2, x - (dx + width / 2), y - (dy + height / 2), width, height);
             };

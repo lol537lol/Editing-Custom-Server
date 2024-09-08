@@ -1,4 +1,5 @@
 import { Component, Input, ViewChild, ElementRef } from '@angular/core';
+import { BsModalService, BsModalRef } from 'ngx-bootstrap/modal';
 import { ButtonAction } from '../../../common/interfaces';
 import { PonyTownGame } from '../../../client/game';
 import { isMobile } from '../../../client/data';
@@ -6,6 +7,7 @@ import { useAction, serializeActions } from '../../../client/buttonActions';
 import { SettingsService } from '../../services/settingsService';
 import { ACTIONS_LIMIT } from '../../../common/constants';
 import { last } from '../../../common/utils';
+import { faCog } from '../../../client/icons';
 
 @Component({
 	selector: 'action-bar',
@@ -14,11 +16,15 @@ import { last } from '../../../common/utils';
 })
 export class ActionBar {
 	@ViewChild('scroller', { static: true }) scroller!: ElementRef;
+	@ViewChild('actionsModal', { static: true }) actionsModal!: ElementRef;
 	@Input() blurred = false;
+	readonly cogIcon = faCog;
 	activeAction: ButtonAction | undefined = undefined;
 	shortcuts = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '='];
+	private modalRef?: BsModalRef;
 	private _editable = false;
-	constructor(private game: PonyTownGame, private settings: SettingsService) {
+	private isWaitingForActionsModal = false;
+	constructor(private game: PonyTownGame, private settings: SettingsService, private modalService: BsModalService) {
 	}
 	@Input() get editable() {
 		return this._editable;
@@ -67,6 +73,40 @@ export class ActionBar {
 			const delta = e.deltaY > 0 ? 1 : -1;
 			this.scroller.nativeElement.scrollLeft += delta * 20;
 		}
+	}
+	openActions() {
+		if (this.isWaitingForActionsModal) {
+			return;
+		}
+
+		if (this.modalRef) {
+			this.closeActions();
+		}
+		else {
+			// if the action menu was opened from the settings dropdown, just do nothing
+			// it means you can't close that menu by clicking on this button, but it's
+			// a minor issue
+			if (document.body.classList.contains('actions-modal-opened')) {
+				return;
+			}
+
+			this.isWaitingForActionsModal = true;
+			this.modalRef = this.modalService.show(this.actionsModal, { ignoreBackdropClick: true });
+		}
+	}
+	closeActions() {
+		if (this.isWaitingForActionsModal) {
+			return;
+		}
+
+		if (this.modalRef) {
+			this.isWaitingForActionsModal = true;
+			this.modalRef.hide();
+			this.modalRef = undefined;
+		}
+	}
+	actionsModalNotify() {
+		this.isWaitingForActionsModal = false;
 	}
 	private updateFreeSlots() {
 		const actions = this.actions;

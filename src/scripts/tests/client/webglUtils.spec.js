@@ -6,14 +6,6 @@ const sinon_1 = require("sinon");
 const webglUtils_1 = require("../../graphics/webgl/webglUtils");
 const errors_1 = require("../../common/errors");
 describe('webglUtils', () => {
-    describe('getRenderTargetSize()', () => {
-        it('returns correct size for 150x200', () => {
-            chai_1.expect(webglUtils_1.getRenderTargetSize(150, 200)).equal(256);
-        });
-        it('returns correct size for 256x512', () => {
-            chai_1.expect(webglUtils_1.getRenderTargetSize(256, 512)).equal(512);
-        });
-    });
     describe('getWebGLContext()', () => {
         it('gets weblg2 context', () => {
             const context = {};

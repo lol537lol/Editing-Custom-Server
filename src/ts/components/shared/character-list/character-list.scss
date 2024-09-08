@@ -1,70 +1,55 @@
 @import '../../../../styles/partials/variables';
-
-.character-list {
-	width: 300px;
-	max-width: calc(100vw - 70px);
-}
-
-.character-list.in-game {
-	max-width: calc(100vw - 90px);
-}
-
-.character-select-search {
-	height: 30px;
-	padding: 0 5px;
-	display: none;
-	position: relative;
-
-	> .form-control {
-		background: white;
-		color: #222;
-		border-color: #eee !important;
-		border-radius: 3px !important;
-		box-shadow: none !important;
-		// width: 100%;
-
-		&:active, &:focus {
-			border-color: #ddd !important;
-		}
-	}
-
-	.character-list-searchable > & {
-		display: flex;
-	}
-}
-
-.hash-button {
-	position: absolute;
-	right: 7px;
-	top: 5px;
-	font-size: 16px;
-	padding: 0 10px;
-}
+@import '../../../../styles/partials/mixins';
 
 .character-select-list {
-	background: #fff;
+	background: #f9f9f9;
 	padding: 0;
 	margin: 0;
-  list-style: none;
-  font-size: $font-size-base;
-  text-align: left;
+	list-style: none;
+	font-size: $font-size-base;
+	text-align: left;
 	padding-top: 1px;
 	max-height: 400px;
 	overflow-x: hidden;
 	overflow-y: auto;
+	border-radius: 12px;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+	position: relative; /* Для абсолютного позиционирования кнопок прокрутки */
 
 	> li {
+		display: flex;
+		align-items: center;
+		padding: 10px 15px;
+		border-bottom: 1px solid #ddd;
+		margin-bottom: 5px;
+		transition: background 0.3s ease, transform 0.2s ease;
+
+		&:last-child {
+			border-bottom: none;
+			margin-bottom: 0;
+		}
+
+		&:hover {
+			background: #f0f0f0;
+			transform: translateY(-2px);
+		}
+
 		&.active {
 			background: $nav-tabs-link-active-color;
+			color: #fff;
+			border-radius: 5px;
 		}
 
 		&.selected > a {
 			font-weight: bold;
+			color: $dropdown-link-hover-color;
 		}
 
 		> a {
-			display: block;
-			padding: 3px 20px;
+			display: flex;
+			align-items: center;
+			width: 100%;
+			padding: 8px 15px;
 			clear: both;
 			font-weight: normal;
 			line-height: $line-height-base;
@@ -81,28 +66,37 @@
 				background-color: $dropdown-link-hover-bg;
 			}
 		}
+
+		.social-network {
+			display: flex;
+			align-items: center;
+			margin-left: 10px; /* Отступ от описания персонажа */
+			color: $dropdown-link-color;
+		}
+
+		.fa-icon {
+			margin-right: 5px; /* Отступ между иконкой и текстом */
+			font-size: 1.2em;
+		}
 	}
 
 	.character-list-searchable > & {
 		border-top: solid 1px #eee;
 		margin-top: 9px;
 	}
-}
 
-.character-desc {
-	font-size: smaller;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	margin-top: 4px;
-	margin-left: 10px;
-}
-
-.character-name {
-	white-space: nowrap;
-}
-
-.tag-list {
-	max-height: 400px;
-	overflow-y: auto;
+	/* Стили для кнопок прокрутки */
+	.scroll-button {
+		position: absolute;
+		right: -10px; /* Изменяем позицию, чтобы кнопка не заходила на границу */
+		background-color: #ffcc55;
+		border: none;
+		color: #fff;
+		font-size: $font-size-base;
+		padding: 10px 15px;
+		cursor: pointer;
+		&:hover {
+			background-color: darken(#ffcc55, 10%);
+		}
+	}
 }

@@ -44,23 +44,6 @@ function adminModChat(names, help, role, type) {
         chat_1.sayToEveryone(client, message, swears_1.filterBadWords(message), type, settings);
     });
 }
-function parseSeason(value) {
-    switch (value.toLowerCase()) {
-        case 'spring': return 8 /* Spring */;
-        case 'summer': return 1 /* Summer */;
-        case 'autumn': return 2 /* Autumn */;
-        case 'winter': return 4 /* Winter */;
-        default: return undefined;
-    }
-}
-function parseHoliday(value) {
-    switch (value.toLowerCase()) {
-        case 'none': return 0 /* None */;
-        case 'halloween': return 2 /* Halloween */;
-        case 'christmas': return 1 /* Christmas */;
-        default: return undefined;
-    }
-}
 function parseWeather(value) {
     switch (value.toLowerCase()) {
         case 'none': return 0 /* None */;
@@ -137,8 +120,9 @@ function createCommands(world) {
         command(['t', 'think'], '/t - thinking balloon', '', shouldNotBeCalled),
         command(['w', 'whisper'], '/w <name> - whisper to player', '', shouldNotBeCalled),
         command(['r', 'reply'], '/r - reply to whisper', '', shouldNotBeCalled),
+        command(['shrug'], '/shrug - ¯\\_(ツ)_/¯', '', shouldNotBeCalled),
         command(['e'], '/e - set permanent expression', '', ({}, { pony }, message) => {
-            pony.exprPermanent = expressionUtils_1.parseExpression(message);
+            pony.exprPermanent = expressionUtils_1.parseExpression(message, true);
             playerUtils_1.setEntityExpression(pony, undefined, 0);
         }),
         // actions
@@ -146,7 +130,7 @@ function createCommands(world) {
             playerUtils_1.execAction(client, 2 /* TurnHead */, settings);
         }),
         command(['boop', ')'], '/boop or /) - a boop', '', ({}, client, message, _, __, settings) => {
-            const expression = expressionUtils_1.parseExpression(message);
+            const expression = expressionUtils_1.parseExpression(message, true);
             if (expression) {
                 playerUtils_1.setEntityExpression(client.pony, expression, 800);
             }
@@ -206,7 +190,9 @@ function createCommands(world) {
         action(['yawn'], 3 /* Yawn */),
         action(['laugh', 'lol', 'haha', 'хаха', 'jaja'], 4 /* Laugh */),
         action(['sneeze', 'achoo'], 5 /* Sneeze */),
+        action(['excite', 'tada'], 34 /* Excite */),
         action(['magic'], 26 /* Magic */),
+        action(['kiss'], 27 /* Kiss */),
         // house
         command(['savehouse'], '/savehouse - saves current house setup', '', async ({}, client) => {
             if (!isValidMapForEditing(client.map, client, true, false))
@@ -254,15 +240,17 @@ function createCommands(world) {
             client.reporter.systemLog(`House unlocked`);
         }),
         command(['removetoolbox'], '/removetoolbox - removes toolbox from the house', '', ({ world }, client) => {
-            if (!isValidMapForEditing(client.map, client, false, true))
+            if (!isValidMapForEditing(client.map, client, true, true))
                 return;
+            client.lastMapLoadOrSave = Date.now();
             houseMap_1.removeToolbox(world, client.map);
             chat_1.saySystem(client, 'Toolbox removed');
             client.reporter.systemLog(`Toolbox removed`);
         }),
         command(['restoretoolbox'], '/restoretoolbox - restores toolbox to the house', '', ({}, client) => {
-            if (!isValidMapForEditing(client.map, client, false, true))
+            if (!isValidMapForEditing(client.map, client, true, true))
                 return;
+            client.lastMapLoadOrSave = Date.now();
             houseMap_1.restoreToolbox(world, client.map);
             chat_1.saySystem(client, 'Toolbox restored');
             client.reporter.systemLog(`Toolbox restored`);
@@ -276,10 +264,6 @@ function createCommands(world) {
             const query = { account: client.account._id, name: { $regex: regex } };
             await characterUtils_1.swapCharacter(client, world, query);
         }),
-        command(['s1'], '', 'sup1', shouldNotBeCalled),
-        command(['s2'], '', 'sup2', shouldNotBeCalled),
-        command(['s3'], '', 'sup3', shouldNotBeCalled),
-        command(['ss'], '/ss - supporter text', 'sup1', shouldNotBeCalled),
         // mod
         adminModChat(['m'], '/m - mod text', 'mod', 3 /* Mod */),
         command(['emotetest'], '/emotetest - print all emotes', 'mod', (_context, client) => {
@@ -329,8 +313,8 @@ function createCommands(world) {
         }),
         BETA && command(['season'], '/season <season> [<holiday>]', 'admin', ({ world }, _client, message) => {
             const [s = '', h = ''] = message.split(' ');
-            const season = parseSeason(s);
-            const holiday = parseHoliday(h);
+            const season = utils_1.parseSeason(s);
+            const holiday = utils_1.parseHoliday(h);
             if (season === undefined) {
                 throw new userError_1.UserError('invalid season');
             }
@@ -497,7 +481,7 @@ chatTypes.set('reply', 9 /* Whisper */);
 chatTypes.set('w', 9 /* Whisper */);
 chatTypes.set('whisper', 9 /* Whisper */);
 function parseCommand(text, type) {
-    if (!utils_1.isCommand(text)) {
+    if (!utils_1.isCommand(text) || text.toLowerCase().startsWith('/shrug')) {
         return { args: text, type };
     }
     const { command, args } = utils_1.processCommand(text);

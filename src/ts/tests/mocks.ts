@@ -38,14 +38,14 @@ export function mock<T>(ctor: new (...args: any[]) => T, fields: any = {}): T {
 
 export function entity(id: number, x = 0, y = 0, type = 0, more: Partial<Entity> = {}): Entity {
 	return {
-		id, x, y, z: 0, vx: 0, vy: 0, type, order: 0, state: 0, playerState: 0, flags: 0, timestamp: 0,
+		id, x, y, z: 0, vx: 0, vy: 0, depth: 0, type, order: 0, state: 0, playerState: 0, flags: 0, timestamp: 0,
 		options: {}, ...more
 	};
 }
 
 export function serverEntity(id: number, x = 0, y = 0, type = 0, more: Partial<ServerEntity> = {}): ServerEntity {
 	return {
-		id, x, y, z: 0, vx: 0, vy: 0, type, order: 0, state: 0, playerState: 0, flags: 0, timestamp: 0,
+		id, x, y, z: 0, vx: 0, vy: 0, depth: 0, type, order: 0, state: 0, playerState: 0, flags: 0, timestamp: 0,
 		options: {}, ...more
 	};
 }
@@ -94,7 +94,6 @@ export function mockClient(fields: any = {}): IClient {
 		subscribes: [],
 		saysQueue: [],
 		lastSays: [],
-		lastAction: 0,
 		lastBoopAction: 0,
 		lastExpressionAction: 0,
 		viewWidth: 3,

@@ -222,9 +222,11 @@ function throwFBOError(gl, status, message = '') {
     }
 }
 function initTexture(gl, width, height, type, format, attachment) {
-    const texture = texture2d_1.createEmptyTexture(gl, width, height, format, type);
-    gl.bindTexture(gl.TEXTURE_2D, texture.handle);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_2D, texture.handle, 0);
+    const texture = texture2d_1.createEmptyTexture(gl, true, width, height, format, type);
+    if (texture) {
+        gl.bindTexture(gl.TEXTURE_2D, texture.handle);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_2D, texture.handle, 0);
+    }
     return texture;
 }
 function initRenderBuffer(gl, width, height, component, attachment) {

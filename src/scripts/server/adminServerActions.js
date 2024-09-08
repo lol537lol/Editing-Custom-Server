@@ -14,13 +14,11 @@ const ponies_1 = require("./api/ponies");
 const internal_1 = require("./internal");
 const reporter_1 = require("./reporter");
 const logger_1 = require("./logger");
-const polling_1 = require("./polling");
 const adminService_1 = require("./services/adminService");
 const origins_1 = require("./api/origins");
 const duplicates_1 = require("./api/duplicates");
 const merge_1 = require("./api/merge");
 const admin_auths_1 = require("./api/admin-auths");
-const patreon_1 = require("./patreon");
 const accountUtils_2 = require("./accountUtils");
 let AdminServerActions = class AdminServerActions {
     constructor(client, server, settings, adminService, endPoints, removedDocument) {
@@ -428,30 +426,18 @@ let AdminServerActions = class AdminServerActions {
     async getDuplicateEntries(force) {
         return await duplicates_1.getDuplicateEntries(this.adminService.accounts.items, force);
     }
-    // patreon
-    async updatePatreon() {
-        await polling_1.updatePatreonData(this.server, this.settings);
-    }
-    async resetSupporter(accountId) {
-        await db_1.Account.updateOne({ _id: accountId }, { $unset: { supporter: 1, patreon: 1, supporterDeclinedSince: 1 } }).exec();
-    }
-    async getLastPatreonData() {
-        const data = await patreon_1.getLastPatreonData();
-        // if (data) {
-        // 	data.pledges.forEach(pledge => {
-        // 		const auth = this.adminService.auths.items.find(a => a.openId === pledge.user);
-        // 		pledge.account = auth && auth.account;
-        // 	});
-        // }
-        return data;
-    }
-    async updatePastSupporters() {
-        await polling_1.updatePastSupporters();
-    }
     // other
     async getTimings(serverId) {
         const server = internal_1.getServer(serverId);
         return server.api.getTimings();
+    }
+    async setTimingEnabled(serverId, isEnabled) {
+        const server = internal_1.getServer(serverId);
+        server.api.setTimingEnabled(isEnabled);
+    }
+    async getWorldPerfStats(serverId) {
+        const server = internal_1.getServer(serverId);
+        return server.api.getWorldPerfStats();
     }
     async teleportTo(accountId) {
         const adminAccountId = this.account._id.toString();
@@ -951,33 +937,21 @@ tslib_1.__decorate([
 tslib_1.__decorate([
     ag_sockets_1.Method({ promise: true }),
     tslib_1.__metadata("design:type", Function),
-    tslib_1.__metadata("design:paramtypes", []),
-    tslib_1.__metadata("design:returntype", Promise)
-], AdminServerActions.prototype, "updatePatreon", null);
-tslib_1.__decorate([
-    ag_sockets_1.Method({ promise: true }),
-    tslib_1.__metadata("design:type", Function),
-    tslib_1.__metadata("design:paramtypes", [String]),
-    tslib_1.__metadata("design:returntype", Promise)
-], AdminServerActions.prototype, "resetSupporter", null);
-tslib_1.__decorate([
-    ag_sockets_1.Method({ promise: true }),
-    tslib_1.__metadata("design:type", Function),
-    tslib_1.__metadata("design:paramtypes", []),
-    tslib_1.__metadata("design:returntype", Promise)
-], AdminServerActions.prototype, "getLastPatreonData", null);
-tslib_1.__decorate([
-    ag_sockets_1.Method({ promise: true }),
-    tslib_1.__metadata("design:type", Function),
-    tslib_1.__metadata("design:paramtypes", []),
-    tslib_1.__metadata("design:returntype", Promise)
-], AdminServerActions.prototype, "updatePastSupporters", null);
-tslib_1.__decorate([
-    ag_sockets_1.Method({ promise: true }),
-    tslib_1.__metadata("design:type", Function),
     tslib_1.__metadata("design:paramtypes", [String]),
     tslib_1.__metadata("design:returntype", Promise)
 ], AdminServerActions.prototype, "getTimings", null);
+tslib_1.__decorate([
+    ag_sockets_1.Method({ promise: true }),
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [String, Boolean]),
+    tslib_1.__metadata("design:returntype", Promise)
+], AdminServerActions.prototype, "setTimingEnabled", null);
+tslib_1.__decorate([
+    ag_sockets_1.Method({ promise: true }),
+    tslib_1.__metadata("design:type", Function),
+    tslib_1.__metadata("design:paramtypes", [String]),
+    tslib_1.__metadata("design:returntype", Promise)
+], AdminServerActions.prototype, "getWorldPerfStats", null);
 tslib_1.__decorate([
     ag_sockets_1.Method({ promise: true }),
     tslib_1.__metadata("design:type", Function),

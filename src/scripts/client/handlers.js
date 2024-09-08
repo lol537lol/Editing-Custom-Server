@@ -337,6 +337,27 @@ function handleAction(game, id, action) {
                     pony_1.setHeadAnimation(pony, ponyAnimations_1.sneeze);
                 }
                 break;
+            case 34 /* Excite */:
+                if (!pony_1.hasHeadAnimation(pony)) {
+                    pony_1.setHeadAnimation(pony, ponyAnimations_1.excite);
+                }
+                break;
+            case 27 /* Kiss */:
+                if (!pony.ponyState.headTurned) {
+                    pony_1.doPonyAction(pony, 4 /* Kiss */);
+                }
+                if (entityUtils_1.isPonyFlying(pony)) {
+                    if (pony_1.isPonyBug(pony)) {
+                        pony_1.setHeadAnimation(pony, ponyAnimations_1.kissFlyBug);
+                    }
+                    else {
+                        pony_1.setHeadAnimation(pony, ponyAnimations_1.kissFly);
+                    }
+                }
+                else {
+                    pony_1.setHeadAnimation(pony, ponyAnimations_1.kiss);
+                }
+                break;
             default:
                 log(`handleAction: Invalid action: ${action}`);
         }

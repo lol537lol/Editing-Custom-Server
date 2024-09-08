@@ -278,7 +278,7 @@ exports.expressions = [
     ['😆', [23 /* X */, 23 /* X */, 5 /* SmileOpen */]],
     ['😟', [15 /* Sad */, 15 /* Sad */, 2 /* Neutral */]],
     ['😠', [19 /* Angry */, 19 /* Angry */, 0 /* Smile */]],
-    ['🤔', [1 /* Neutral */, 8 /* Frown2 */, 13 /* Kiss */]],
+    ['🤔', [1 /* Neutral */, 8 /* Frown2 */, 7 /* Concerned */]],
     ['😈', [19 /* Angry */, 19 /* Angry */, 0 /* Smile */, 1 /* Up */, 0 /* Forward */]],
     ['👿', [19 /* Angry */, 19 /* Angry */, 18 /* SmileTeeth */]],
     // unsafe faces

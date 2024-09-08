@@ -8,7 +8,7 @@ import { Model } from '../../services/model';
 import { PonyTownGame } from '../../../client/game';
 import { Dropdown } from '../directives/dropdown';
 import {
-	emptyIcon, faCog, faSearch, faSignOutAlt, faStepForward, faVolumeOff, faVolumeUp, faVolumeDown, faPlus, faMinus
+    emptyIcon, faCog, faSearch, faSignOutAlt, faStepForward, faVolumeOff, faVolumeUp, faVolumeDown, faPlus, faMinus, faUsers,faEyeSlash, faCog as faSettings, faCode, faLaughBeam
 } from '../../../client/icons';
 import { SettingsService } from '../../services/settingsService';
 import { Audio } from '../../services/audio';
@@ -26,6 +26,11 @@ export class SettingsBox implements OnInit, OnDestroy {
 	readonly emptyIcon = emptyIcon;
 	readonly plusIcon = faPlus;
 	readonly minusIcon = faMinus;
+	readonly usersIcon = faUsers;
+	readonly unhideIcon = faEyeSlash; // Иконка для Unhide Players
+	readonly settingsIcon = faSettings; // Иконка для Settings
+	readonly actionsIcon = faLaughBeam; // Иконка для Actions
+	readonly invitesIcon = faCode; // Иконка для управления приглашениями
 	modalRef?: BsModalRef;
 	time?: string;
 	@ViewChild('dropdown', { static: true }) dropdown!: Dropdown;
@@ -33,6 +38,7 @@ export class SettingsBox implements OnInit, OnDestroy {
 	@ViewChild('settingsModal', { static: true }) settingsModal!: TemplateRef<any>;
 	@ViewChild('invitesModal', { static: true }) invitesModal!: TemplateRef<any>;
 	private subscription?: Subscription;
+
 	constructor(
 		private model: Model,
 		private modalService: BsModalService,
@@ -41,8 +47,8 @@ export class SettingsBox implements OnInit, OnDestroy {
 		private game: PonyTownGame,
 		private audio: Audio,
 		private zone: NgZone,
-	) {
-	}
+	) {}
+
 	get scale() {
 		return this.game.scale;
 	}
@@ -72,6 +78,7 @@ export class SettingsBox implements OnInit, OnDestroy {
 	get hasInvites() {
 		return this.isMod; // TEMP
 	}
+
 	ngOnInit() {
 		this.game.onClock
 			.pipe(
@@ -85,6 +92,7 @@ export class SettingsBox implements OnInit, OnDestroy {
 				}
 			});
 	}
+
 	ngOnDestroy() {
 		this.subscription && this.subscription.unsubscribe();
 	}

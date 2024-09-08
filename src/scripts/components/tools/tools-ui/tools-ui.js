@@ -101,7 +101,6 @@ let ToolsUI = class ToolsUI {
             ],
         };
         game.onClock.next('00:00');
-        game.failedFBO = true;
         game.send = (action) => action({
             action() { },
             select() { },

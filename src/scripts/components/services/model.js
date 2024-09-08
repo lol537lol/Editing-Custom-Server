@@ -155,7 +155,11 @@ let Model = class Model {
             this.sites = [noneSite, ...(account.sites || []).map(clientUtils_1.toSocialSiteInfo)];
             this.ponies = account.ponies ? account.ponies.sort(comparePonies) : [];
             this.friends = undefined;
-            this.selectPony(getDefaultPony(this.ponies));
+            let defaultPony = getDefaultPony(this.ponies);
+            if (this.ponies.length === 0) {
+                defaultPony.name = constants_1.NEW_ACCOUNT_PONY_NAME;
+            }
+            this.selectPony(defaultPony);
             this.storage.setItem('vid', account.id);
             this.loading = false;
             this.accountAlert = account.alert;

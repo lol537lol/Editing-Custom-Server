@@ -6,7 +6,7 @@ function isKeyEventInvalid(e) {
     return e.target && /^(input|textarea|select)$/i.test(e.target.tagName);
 }
 function allowKey(key) {
-    return key === 27 /* ESCAPE */ || key === 116 /* F5 */ || key === 123 /* F12 */ || key === 122 /* F11 */ || key === 9 /* TAB */;
+    return key === 27 /* ESCAPE */ || key === 116 /* F5 */ || key === 123 /* F12 */ || key === 122 /* F11 */ || key === 9 /* TAB */ || key === 67 /* KEY_C */ || key === 73 /* KEY_I */;
 }
 function fixKeyCode(key) {
     if (firefox) {

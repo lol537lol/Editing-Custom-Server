@@ -1,4 +1,4 @@
-import { readFileAsync, writeFileAsync } from 'fs';
+import { readFileAsync, writeFileAsync, mkdirAsync } from 'fs';
 import { Settings } from '../common/adminInterfaces';
 import { cloneDeep } from '../common/utils';
 import * as paths from './paths';
@@ -17,8 +17,18 @@ export async function loadSettings() {
 	try {
 		const json = await readFileAsync(settingsPath, 'utf8');
 		return JSON.parse(json) as Settings;
-	} catch {
-		return {} as Settings;
+	} catch (e) {
+		if (e.code === 'ENOENT') {
+			try {
+				await mkdirAsync(paths.pathTo('settings'));
+			} catch (e2) {
+				if (e2.code !== 'EEXIST') throw e;
+			}
+		} else {
+			console.error('Error reading settings file: ' + e);
+		}
+
+		return cloneDeep(defaultSettings);
 	}
 }
 

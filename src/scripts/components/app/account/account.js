@@ -8,9 +8,11 @@ const data_1 = require("../../../client/data");
 const model_1 = require("../../services/model");
 const sign_in_box_1 = require("../../shared/sign-in-box/sign-in-box");
 const icons_1 = require("../../../client/icons");
+const router_1 = require("@angular/router");
 let Account = class Account {
-    constructor(model) {
+    constructor(model, router) {
         this.model = model;
+        this.router = router;
         this.refreshIcon = icons_1.faSync;
         this.starIcon = icons_1.faStar;
         this.alertIcon = icons_1.faExclamationCircle;
@@ -23,6 +25,7 @@ let Account = class Account {
             birthdate: '',
         };
         this.accountSaved = false;
+        this.isNewAccount = false;
         this.hides = undefined;
         this.page = 0;
     }
@@ -33,6 +36,7 @@ let Account = class Account {
             name: account.name,
             birthdate: account.birthdate,
         };
+        this.isNewAccount = account.birthdate === '';
         this.pageChanged();
     }
     ngOnDestroy() {
@@ -76,6 +80,9 @@ let Account = class Account {
     get showAccountAlert() {
         return this.model.missingBirthdate;
     }
+    get saveButtonText() {
+        return this.isNewAccount ? 'Save and continue' : 'Save';
+    }
     icon(id) {
         return sign_in_box_1.getProviderIcon(id);
     }
@@ -86,6 +93,9 @@ let Account = class Account {
             this.model.updateAccount(this.data)
                 .catch((e) => this.accountError = e.message)
                 .then(() => this.accountSaved = true);
+            if (this.isNewAccount) {
+                this.router.navigate(['home']);
+            }
         }
     }
     removeSite(site) {
@@ -122,7 +132,7 @@ Account = tslib_1.__decorate([
         templateUrl: 'account.pug',
         styleUrls: ['account.scss'],
     }),
-    tslib_1.__metadata("design:paramtypes", [model_1.Model])
+    tslib_1.__metadata("design:paramtypes", [model_1.Model, router_1.Router])
 ], Account);
 exports.Account = Account;
 //# sourceMappingURL=account.js.map

@@ -140,6 +140,7 @@ import {
 	faLinux,
 	faAmilia,
 	faYandexInternational,
+	faDiscord
 } from '../generated/fa-icons';
 
 export {
@@ -148,6 +149,7 @@ export {
 	faTwitter,
 	faTumblr,
 	faGithub,
+	faDiscord
 } from '../generated/fa-icons';
 
 export const partyLeaderIcon = faCrown;
@@ -167,6 +169,7 @@ export const oauthIcons: { [key: string]: any; } = {
 	github: faGithub,
 	vkontakte: faVk,
 	google: faGoogle,
+	discord: faDiscord
 };
 
 export const uaIcons: { [key: string]: any; } = {

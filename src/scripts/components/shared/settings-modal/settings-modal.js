@@ -17,7 +17,7 @@ let SettingsModal = class SettingsModal {
         this.maxChatlogRange = constants_1.MAX_CHATLOG_RANGE;
         this.minChatlogRange = constants_1.MIN_CHATLOG_RANGE;
         this.gameIcon = icons_1.faSlidersH;
-        this.chatIcon = icons_1.faCommentSlash;
+        this.chatIcon = icons_1.faComment;
         this.filtersIcon = icons_1.faCommentSlash;
         this.controlsIcon = icons_1.faGamepad;
         this.graphicsIcon = icons_1.faImage;
@@ -29,6 +29,24 @@ let SettingsModal = class SettingsModal {
         this.accountBackup = {};
         this.browserBackup = {};
         this.done = false;
+        if (game.webgl) {
+            if (game.webgl.failedFBO) {
+                this.maxGraphicsQuality = 0;
+                this.maxGraphicsQualityValue = 0 /* Low */;
+            }
+            else if (game.webgl.failedDepthBuffer) {
+                this.maxGraphicsQuality = 1;
+                this.maxGraphicsQualityValue = 1 /* Medium */;
+            }
+            else {
+                this.maxGraphicsQuality = 2;
+                this.maxGraphicsQualityValue = 2 /* High */;
+            }
+        }
+        else {
+            this.maxGraphicsQuality = 2;
+            this.maxGraphicsQualityValue = 2 /* High */;
+        }
     }
     get pane() {
         return this.storage.getItem('settings-modal-pane') || 'game';
@@ -36,12 +54,23 @@ let SettingsModal = class SettingsModal {
     set pane(value) {
         this.storage.setItem('settings-modal-pane', value);
     }
-    get lockLowGraphicsMode() {
-        return this.game.failedFBO;
-    }
     get chatlogRangeText() {
         const range = this.account.chatlogRange;
         return constants_1.isChatlogRangeUnlimited(range) ? 'entire screen' : `${range} tiles`;
+    }
+    get graphicsQualityText() {
+        if (!this.game.webgl || (this.browser.graphicsQuality === undefined)) {
+            return 'Undefined';
+        }
+        if (this.game.webgl.failedFBO || (this.browser.graphicsQuality === 0 /* Low */)) {
+            return 'Low';
+        }
+        else if (this.game.webgl.failedDepthBuffer || (this.browser.graphicsQuality === 1 /* Medium */)) {
+            return 'Medium';
+        }
+        else {
+            return 'High';
+        }
     }
     ngOnInit() {
         this.accountBackup = utils_1.cloneDeep(this.settingsService.account);
@@ -87,6 +116,14 @@ let SettingsModal = class SettingsModal {
         this.settingsService.saveBrowserSettings(this.browser);
         this.close.emit();
     }
+    switchTimestamp(state) {
+        if (!state)
+            this.browser.timestamp = undefined;
+        else if (state === '12')
+            this.browser.timestamp = '12';
+        else if (state === '24')
+            this.browser.timestamp = '24';
+    }
     updateChatlogRange(range) {
         document.body.classList.add('translucent-modals');
         clientUtils_1.updateRangeIndicator(range, this.game);
@@ -104,6 +141,9 @@ let SettingsModal = class SettingsModal {
         }
         if (this.account.filterWords === undefined) {
             this.account.filterWords = '';
+        }
+        if (this.browser.graphicsQuality === undefined) {
+            this.browser.graphicsQuality = this.maxGraphicsQualityValue;
         }
     }
     export() {

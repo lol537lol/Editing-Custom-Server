@@ -7,6 +7,8 @@ import { Model } from '../../services/model';
 import { supporterClass, supporterTitle, isSupporterOrPastSupporter } from '../../../client/clientUtils';
 import { SettingsService } from '../../services/settingsService';
 import { REQUEST_DATE_OF_BIRTH } from '../../../common/constants';
+import { BsModalService } from 'ngx-bootstrap/modal';
+import { TemplateRef } from '@angular/core';
 
 @Component({
 	selector: 'menu-bar',
@@ -28,8 +30,10 @@ export class MenuBar {
 	@Input() account?: AccountData;
 	@Output() signOut = new EventEmitter();
 	@Output() signIn = new EventEmitter<OAuthProvider>();
-	constructor(private model: Model, private settings: SettingsService) {
+
+	constructor(private model: Model, private settings: SettingsService, private modalService: BsModalService) {
 	}
+
 	get hasSupporterIcon() {
 		return isSupporterOrPastSupporter(this.account);
 	}
@@ -54,8 +58,13 @@ export class MenuBar {
 	@HostListener('window:resize')
 	resize() {
 	}
+
 	setStatus(status: string) {
 		this.settings.account.hidden = status === 'invisible';
 		this.settings.saveAccountSettings(this.settings.account);
+	}
+
+	openSettings(settingsModal: TemplateRef<any>) {
+		this.modalService.show(settingsModal, { ignoreBackdropClick: true });
 	}
 }

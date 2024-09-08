@@ -33,29 +33,34 @@ function getColorFloat(color, alpha) {
 }
 exports.getColorFloat = getColorFloat;
 class BaseSpriteBatch extends baseStateBatch_1.BaseStateBatch {
-    constructor(gl, capacity, buffer, vertexBuffer, indexBuffer, attributes) {
+    constructor(gl, vertexCapacityMax, indexBuffer, attributes) {
         super();
         this.gl = gl;
-        this.capacity = capacity;
+        this.vertexCapacityMax = vertexCapacityMax;
         this.attributes = attributes;
-        this.tris = 0;
+        this.depth = 1;
+        this.drawnTrisStats = 0;
         this.flushes = 0;
         this.index = 0;
         this.spritesCount = 0;
-        this.vao = undefined;
         this.rectSprite = undefined;
-        this.vertexBuffer = undefined;
-        this.indexBuffer = undefined;
-        this.spriteSheet = undefined;
         this.batching = false;
         this.startBatchIndex = 0;
         this.startBatchSprites = 0;
-        this.floatsPerSprite = vaoAttributes_1.getVAOAttributesSize(gl, attributes);
-        this.vertices = new Float32Array(buffer, 0, capacity * this.floatsPerSprite);
-        this.verticesUint32 = new Uint32Array(buffer, 0, capacity * this.floatsPerSprite);
+        const bytesPerVertex = vaoAttributes_1.getVAOAttributesSize(gl, attributes);
+        this.vertices = new Float32Array(vertexCapacityMax * bytesPerVertex);
+        this.spritesCapacity = (vertexCapacityMax / 4) | 0; // 4 vertices per sprite
+        this.floatsPerSprite = bytesPerVertex | 0; // bytesPerVertex * 4 / sizeof(float)
+        const vertexBuffer = gl.createBuffer();
+        if (!vertexBuffer) {
+            throw new Error(`Failed to allocate vertex buffer`);
+        }
         this.vertexBuffer = vertexBuffer;
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, this.vertices, gl.DYNAMIC_DRAW);
         this.indexBuffer = indexBuffer;
         this.vao = glVao_1.createVAO(gl, vaoAttributes_1.createVAOAttributes(gl, attributes, vertexBuffer), indexBuffer);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
     }
     dispose() {
         disposeBuffers(this.gl, this);
@@ -79,13 +84,12 @@ class BaseSpriteBatch extends baseStateBatch_1.BaseStateBatch {
             throw new Error('Cannot transform batch');
         }
         const batchSpriteCount = (batch.length / this.floatsPerSprite) | 0;
-        if (this.capacity < (this.spritesCount + batchSpriteCount)) {
+        if (this.spritesCapacity < (this.spritesCount + batchSpriteCount)) {
             this.flush();
         }
         this.vertices.set(batch, this.index);
         this.index += batch.length;
         this.spritesCount += batchSpriteCount;
-        this.tris += batchSpriteCount * 2;
     }
     startBatch() {
         if (this.batching) {
@@ -130,6 +134,7 @@ class BaseSpriteBatch extends baseStateBatch_1.BaseStateBatch {
             TIMING && timing_1.timeStart('vao.draw');
             this.vao.draw(this.gl.TRIANGLES, this.startBatchSprites * 6, 0);
             TIMING && timing_1.timeEnd();
+            this.drawnTrisStats += this.startBatchSprites * 2;
             this.spritesCount -= this.startBatchSprites;
             this.index -= this.startBatchIndex;
             this.vertices.copyWithin(0, this.startBatchIndex, this.startBatchIndex + this.index);
@@ -144,6 +149,7 @@ class BaseSpriteBatch extends baseStateBatch_1.BaseStateBatch {
             TIMING && timing_1.timeStart('vao.draw');
             this.vao.draw(this.gl.TRIANGLES, this.spritesCount * 6, 0);
             TIMING && timing_1.timeEnd();
+            this.drawnTrisStats += this.spritesCount * 2;
             this.spritesCount = 0;
             this.index = 0;
         }
@@ -159,15 +165,11 @@ function disposeBuffers(gl, batch) {
         if (batch.vertexBuffer) {
             gl.deleteBuffer(batch.vertexBuffer);
         }
-        if (batch.indexBuffer) {
-            gl.deleteBuffer(batch.indexBuffer);
-        }
     }
     catch (e) {
         DEVELOPMENT && console.error(e);
     }
     batch.vao = undefined;
     batch.vertexBuffer = undefined;
-    batch.indexBuffer = undefined;
 }
 //# sourceMappingURL=baseSpriteBatch.js.map

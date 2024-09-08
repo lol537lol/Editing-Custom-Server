@@ -93,6 +93,7 @@ export type Batch = Float32Array;
 
 export interface SpriteBatchBase {
 	globalAlpha: number;
+	depth: number;
 	crop(x: number, y: number, w: number, h: number): void;
 	clearCrop(): void;
 	save(): void;
@@ -105,11 +106,11 @@ export interface SpriteBatchBase {
 	startBatch(): void;
 	finishBatch(): Batch | undefined;
 	releaseBatch(batch: Batch): void;
+	flush(): void;
 }
 
 export interface SpriteBatchCommons extends SpriteBatchBase {
 	palette: boolean;
-	depth?: number;
 	drawRect(color: number, x: number, y: number, w: number, h: number): void;
 }
 
@@ -127,6 +128,7 @@ export interface PaletteSpriteBatch extends SpriteBatchCommons {
 		sx: number, sy: number, sw: number, sh: number, dx: number, dy: number, dw: number, dh: number
 	): void;
 	drawSprite(sprite: Sprite, color: number, palette: Palette | undefined, x: number, y: number): void;
+	patchBatchDepth(batch: Batch): void;
 }
 
 export function isPaletteSpriteBatch(batch: SpriteBatch | PaletteSpriteBatch): batch is PaletteSpriteBatch {
@@ -360,6 +362,7 @@ export interface SpriteSheet {
 	texture: Texture2D | undefined;
 	sprites: (Sprite | undefined)[];
 	palette: boolean;
+	isSingleChannel: boolean;
 }
 
 export interface SpriteBorder {
@@ -541,6 +544,7 @@ export interface Entity extends EntityPart {
 	z: number;
 	vx: number;
 	vy: number;
+	depth: number;
 	// frame: number; // last update frame
 	timestamp: number;
 
@@ -562,6 +566,7 @@ export const enum DoAction {
 	Boop,
 	Swing,
 	HoldPoof,
+	Kiss,
 }
 
 export interface Pony extends Entity {
@@ -668,8 +673,15 @@ export interface AccountSettings {
 	hidden?: boolean;
 }
 
+export const enum GraphicsQuality {
+	Low,
+	Medium,
+	High
+}
+
 export interface BrowserSettings {
 	lowGraphicsMode?: boolean;
+	graphicsQuality?: GraphicsQuality;
 	chatlogClosed?: boolean;
 	chatlogTab?: string;
 	chatlogWidth?: number;
@@ -683,6 +695,7 @@ export interface BrowserSettings {
 	scale?: number;
 	walkByDefault?: boolean;
 	brightNight?: boolean;
+	timestamp?: '24' | '12';
 }
 
 export interface EntityTypeName {
@@ -1086,12 +1099,14 @@ export const enum Action {
 	RequestEntityInfo,
 	ACL,
 	Magic,
+	Kiss,
 	RemoveEntity,
 	PlaceEntity,
 	SwitchTool,
 	SwitchToolRev,
 	SwitchToPlaceTool,
 	SwitchToTileTool,
+	Excite,
 }
 
 export const enum InfoFlags {
@@ -1102,7 +1117,7 @@ export const enum InfoFlags {
 }
 
 export function isExpressionAction(action: Action) {
-	return action === Action.Yawn || action === Action.Laugh || action === Action.Sneeze;
+	return action === Action.Yawn || action === Action.Laugh || action === Action.Sneeze || action === Action.Excite;
 }
 
 export interface EditorPlaceAction {
@@ -1208,6 +1223,7 @@ export interface SpriteSet<T> extends SpriteSetBase {
 }
 
 export interface PonyInfoBase<T, SET> {
+	//body: SET | undefined;
 	head: SET | undefined;
 	nose: SET | undefined;
 	ears: SET | undefined;
@@ -1364,6 +1380,7 @@ export interface BodyAnimation {
 	fps: number;
 	frames: BodyAnimationFrame[];
 	shadow?: BodyShadow[];
+	disableHeadTurnFrames: number;
 }
 
 export interface HeadAnimationFrame {
@@ -1374,10 +1391,17 @@ export interface HeadAnimationFrame {
 	mouth: Muzzle;
 }
 
+export const enum HeadAnimationProperties {
+	None = 0,
+	DontIncreaseEyeOpenness = 1,
+	DontDecreaseMouthOpenness = 2
+}
+
 export interface HeadAnimation {
 	name: string;
 	loop: boolean;
 	fps: number;
+	properties: HeadAnimationProperties;
 	frames: HeadAnimationFrame[];
 }
 
@@ -1535,10 +1559,44 @@ export const enum Muzzle {
 	// max: 31
 }
 
-export const CLOSED_MUZZLES = [
-	Muzzle.Smile, Muzzle.Frown, Muzzle.Neutral, Muzzle.Scrunch, Muzzle.Flat, Muzzle.Concerned,
-	Muzzle.Kiss, Muzzle.Kiss2,
-];
+export function getMuzzleOpenness(muzzle: Muzzle) {
+	switch (muzzle) {
+		case Muzzle.Smile:
+		case Muzzle.Frown:
+		case Muzzle.Neutral:
+		case Muzzle.Scrunch:
+		case Muzzle.Blep:
+		case Muzzle.Flat:
+		case Muzzle.Concerned:
+		case Muzzle.Kiss:
+		case Muzzle.Kiss2:
+		case Muzzle.FlatBlep:
+			return 0;
+		case Muzzle.SmileOpen:
+		case Muzzle.ConcernedOpen:
+		case Muzzle.FrownOpen:
+		case Muzzle.NeutralOpen2:
+		case Muzzle.SmileTeeth:
+		case Muzzle.FrownTeeth:
+		case Muzzle.NeutralTeeth:
+		case Muzzle.ConcernedTeeth:
+		case Muzzle.Oh:
+			return 1;
+		case Muzzle.SmileOpen2:
+			return 2;
+		case Muzzle.ConcernedOpen2:
+		case Muzzle.SmileOpen3:
+		case Muzzle.NeutralOpen3:
+		case Muzzle.SmilePant:
+		case Muzzle.NeutralPant:
+			return 3;
+		case Muzzle.ConcernedOpen3:
+			return 4;
+		default:
+			console.error('unregistered muzzle in getMuzzleOpenness');
+			return 0;
+	}
+}
 
 export const enum Eye {
 	None = 0,
@@ -1569,10 +1627,43 @@ export const enum Eye {
 	// max: 31
 }
 
-export function isEyeSleeping(eye: Eye) {
-	return eye === Eye.Closed ||
-		(eye >= Eye.Lines && eye <= Eye.ClosedHappy) ||
-		(eye >= Eye.Peaceful && eye <= Eye.X2);
+export function getEyeOpenness(eye: Eye) {
+	switch (eye) {
+		case Eye.None:
+		case Eye.Closed:
+		case Eye.ClosedHappy:
+		case Eye.ClosedHappy2:
+		case Eye.ClosedHappy3:
+		case Eye.Lines:
+		case Eye.Peaceful:
+		case Eye.Peaceful2:
+		case Eye.X:
+		case Eye.X2:
+			return 0;
+		case Eye.Neutral5:
+		case Eye.Frown4:
+			return 1;
+		case Eye.Neutral4:
+		case Eye.Frown3:
+		case Eye.Sad4:
+			return 2;
+		case Eye.Neutral3:
+		case Eye.Frown2:
+		case Eye.Sad3:
+		case Eye.Angry2:
+			return 3;
+		case Eye.Neutral2:
+		case Eye.Sad2:
+		case Eye.Angry:
+		case Eye.Frown:
+			return 4;
+		case Eye.Neutral:
+		case Eye.Sad:
+			return 5;
+		default:
+			console.error('unregistered eye in getEyeOpenness');
+			return 5;
+	}
 }
 
 export const enum Iris {
@@ -1639,6 +1730,7 @@ export interface DrawOptions {
 	tileGrid: boolean;
 	engine: Engine;
 	season: Season;
+	useDepthBuffer: boolean;
 	error: (message: string) => void;
 }
 
@@ -1655,6 +1747,7 @@ export const defaultDrawOptions: DrawOptions = {
 	tileGrid: false,
 	engine: Engine.Default,
 	season: Season.Summer,
+	useDepthBuffer: true,
 	error: () => { },
 };
 
@@ -1762,4 +1855,18 @@ export const enum UpdateFlags {
 	PlayerState = 1024,
 	SwitchRegion = 2048,
 	// max 32768
+}
+
+export let counterNow: () => number;
+
+if (typeof window !== 'undefined') {
+	counterNow = performance.now;
+} else {
+	const hrtime = process.hrtime;
+	const getNanoSeconds = () => {
+		const hr = hrtime();
+		return hr[0] * 1e9 + hr[1];
+	};
+	const nodeLoadTime = getNanoSeconds() - process.uptime() * 1e9;
+	counterNow = () => (getNanoSeconds() - nodeLoadTime) / 1e6;
 }

@@ -142,7 +142,7 @@ const exampleCM = [
 	BLUE, BLUE, BLUE, BLUE, BLUE,
 ];
 
-const frontLegsCount = 39;
+const frontLegsCount = 40;
 const backLegsCount = 27;
 
 const frontLegsSheet = {
@@ -839,6 +839,7 @@ function state(
 		name: '',
 		loop: false,
 		fps: 24,
+		disableHeadTurnFrames: 0,
 		frames: times(frames, i => ({
 			...createBodyFrame([]),
 			head: (head || ones)[i],

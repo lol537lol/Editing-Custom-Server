@@ -37,7 +37,7 @@ const actions = [
     { name: 'kick', action: 4 /* Kick */ },
     { name: 'ban', action: 5 /* Ban */ },
 ];
-exports.modCheck = { xcz: { vdw: { qwe: { mnb: {} } } }, actions };
+exports.modCheck = { hgf: { bvc: { wer: { ngf: {} } } }, actions };
 function fixUpdateAccountData(update) {
     const fixed = {};
     if (update) {

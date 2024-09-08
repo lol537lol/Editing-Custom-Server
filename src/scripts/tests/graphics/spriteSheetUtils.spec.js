@@ -16,7 +16,19 @@ describe('spriteSheetUtils', () => {
             const tex = {};
             const createTexture = sinon_1.stub().returns(tex);
             const sheet = [
-                { sprites: [], src: 'foo', data, texture: undefined, palette: false },
+                { sprites: [], src: 'foo', data, texture: undefined, isSingleChannel: false, palette: false },
+            ];
+            spriteSheetUtils_1.createTexturesForSpriteSheets(gl, sheet, createTexture);
+            sinon_1.assert.calledWith(createTexture, gl, data);
+            chai_1.expect(sheet[0].texture).equal(tex);
+        });
+        it('creates single channel texture from image', () => {
+            const gl = {};
+            const data = createImageData();
+            const tex = {};
+            const createTexture = sinon_1.stub().returns(tex);
+            const sheet = [
+                { sprites: [], src: 'foo', data, texture: undefined, isSingleChannel: true, palette: false },
             ];
             spriteSheetUtils_1.createTexturesForSpriteSheets(gl, sheet, createTexture);
             sinon_1.assert.calledWith(createTexture, gl, data);
@@ -25,7 +37,8 @@ describe('spriteSheetUtils', () => {
         it('handles empty sprites', () => {
             const createTexture = sinon_1.stub().returns({});
             const sheet = [
-                { sprites: [undefined], src: 'foo', data: createImageData(), texture: undefined, palette: false },
+                { sprites: [undefined], src: 'foo', data: createImageData(),
+                    isSingleChannel: false, texture: undefined, palette: false },
             ];
             spriteSheetUtils_1.createTexturesForSpriteSheets({}, sheet, createTexture);
         });

@@ -429,4 +429,42 @@ function h2rgb(h) {
     };
 }
 exports.h2rgb = h2rgb;
+function rgb2hsl(rgb) {
+    const r = rgb.r / 255;
+    const g = rgb.g / 255;
+    const b = rgb.b / 255;
+    let max = Math.max(r, g, b);
+    let min = Math.min(r, g, b);
+    let delta = max - min;
+    let h = 0;
+    let s;
+    let l;
+    if (max === min)
+        h = 0;
+    else if (r === max)
+        h = (g - b) / delta;
+    else if (g === max)
+        h = 2 + (b - r) / delta;
+    else if (b === max)
+        h = 4 + (r - g) / delta;
+    h = Math.min(h * 60, 360);
+    if (h < 0)
+        h += 360;
+    l = (min + max) / 2;
+    if (max === min)
+        s = 0;
+    else if (l <= 0.5)
+        s = delta / (max + min);
+    else
+        s = delta / (2 - max - min);
+    h = Math.floor(h);
+    s = Math.floor(s * 100);
+    l = Math.floor(l * 100);
+    return { h, s, l };
+}
+exports.rgb2hsl = rgb2hsl;
+function hsl2CSS(hsl) {
+    return `hsl(${hsl.h},${hsl.s}%,${hsl.l}%)`;
+}
+exports.hsl2CSS = hsl2CSS;
 //# sourceMappingURL=color.js.map

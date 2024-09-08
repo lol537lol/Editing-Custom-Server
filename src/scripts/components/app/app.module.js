@@ -36,7 +36,7 @@ AppModule = tslib_1.__decorate([
     core_1.NgModule({
         imports: [
             platform_browser_1.BrowserModule,
-            router_1.RouterModule,
+            router_1.RouterModule.forRoot(exports.routes, { anchorScrolling: 'enabled' }),
             forms_1.FormsModule,
             http_1.HttpClientModule,
             popover_1.PopoverModule.forRoot(),
@@ -44,7 +44,6 @@ AppModule = tslib_1.__decorate([
             tooltip_1.TooltipModule.forRoot(),
             // TypeaheadModule.forRoot(),
             shared_module_1.SharedModule,
-            router_1.RouterModule.forRoot(exports.routes),
             angular_fontawesome_1.FontAwesomeModule,
         ],
         declarations: [

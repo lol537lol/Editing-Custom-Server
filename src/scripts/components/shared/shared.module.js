@@ -25,8 +25,8 @@ const emote_box_1 = require("./emote-box/emote-box");
 const slider_bar_1 = require("./slider-bar/slider-bar");
 const sprite_box_1 = require("./sprite-box/sprite-box");
 const sprite_selection_1 = require("./sprite-selection/sprite-selection");
-const support_button_1 = require("./support-button/support-button");
-const supporter_pony_1 = require("./supporter-pony/supporter-pony");
+const discord_button_1 = require("./discord-button/discord-button");
+const discord_pony_1 = require("./discord-pony/discord-pony");
 const set_selection_1 = require("./set-selection/set-selection");
 const check_box_1 = require("./check-box/check-box");
 const portrait_box_1 = require("./portrait-box/portrait-box");
@@ -73,6 +73,8 @@ const hasFeature_1 = require("./directives/hasFeature");
 const dropdown_1 = require("./directives/dropdown");
 const saveActiveTab_1 = require("./directives/saveActiveTab");
 const siteName_1 = require("./pipes/siteName");
+const visit_pt_button_1 = require("./visit-pt-button/visit-pt-button");
+const visit_pt_pony_1 = require("./visit-pt-pony/visit-pt-pony");
 const declarations = [
     action_bar_1.ActionBar,
     action_button_1.ActionButton,
@@ -88,8 +90,10 @@ const declarations = [
     slider_bar_1.SliderBar,
     sprite_box_1.SpriteBox,
     sprite_selection_1.SpriteSelection,
-    support_button_1.SupportButton,
-    supporter_pony_1.SupporterPony,
+    discord_button_1.DiscordButton,
+    discord_pony_1.DiscordPony,
+    visit_pt_button_1.VisitPTButton,
+    visit_pt_pony_1.VisitPTPony,
     set_selection_1.SetSelection,
     set_selection_1.SetOutlineHidden,
     check_box_1.CheckBox,

@@ -93,6 +93,7 @@ describe('playerUtils', () => {
                 account,
                 character,
                 ip: '',
+                isMobile: false,
                 map,
                 isSwitchingMap: false,
                 pony,
@@ -111,8 +112,7 @@ describe('playerUtils', () => {
                 safeX: 10,
                 safeY: 20,
                 lastPacket: 123,
-                lastAction: 0,
-                lastBoopAction: 0,
+                lastBoopOrKissAction: 0,
                 lastExpressionAction: 0,
                 lastX: 10,
                 lastY: 20,
@@ -400,10 +400,10 @@ describe('playerUtils', () => {
     });
     describe('canPerformAction()', () => {
         it('returns true if last action date is below current time', () => {
-            chai_1.expect(playerUtils_1.canPerformAction(mocks_1.mockClient({ lastAction: 1234 }))).true;
+            chai_1.expect(playerUtils_1.canPerformAction(mocks_1.mockClient({ lastBoopOrKissAction: 1234 }))).true;
         });
         it('returns false if last action date is ahead or current time', () => {
-            chai_1.expect(playerUtils_1.canPerformAction(mocks_1.mockClient({ lastAction: Date.now() + 1000 }))).false;
+            chai_1.expect(playerUtils_1.canPerformAction(mocks_1.mockClient({ lastExpressionAction: Date.now() + 1000 }))).false;
         });
     });
     describe('sendAction()', () => {
@@ -438,7 +438,8 @@ describe('playerUtils', () => {
             client = mocks_1.mockClient();
             client.map = serverMap_1.createServerMap('foo', 0, 1, 1);
             client.pony.region = client.map.regions[0];
-            client.lastAction = 0;
+            client.lastExpressionAction = 0;
+            client.lastBoopOrKissAction = 0;
         });
         it('sends boop action', () => {
             playerUtils_1.boop(client, 1000);
@@ -455,10 +456,10 @@ describe('playerUtils', () => {
             playerUtils_1.boop(client, 1000);
             chai_1.expect(client.pony.options.expr).equal(expressionEncoder_1.EMPTY_EXPRESSION);
         });
-        it('updates last boop action', () => {
-            client.lastBoopAction = 0;
+        it('updates last boop/kiss action', () => {
+            client.lastBoopOrKissAction = 0;
             playerUtils_1.boop(client, 100);
-            chai_1.expect(client.lastBoopAction).equal(100 + 500);
+            chai_1.expect(client.lastBoopOrKissAction).equal(100 + 850);
         });
         it('executes boop on found entity', () => {
             const boop = sinon_1.stub();
@@ -476,16 +477,17 @@ describe('playerUtils', () => {
             worldMap_1.getRegion(client.map, 0, 0).entities.push(mocks_1.serverEntity(0, 4.2, 5, 0, { boop: stubBoop }));
             playerUtils_1.boop(client, 0);
             sinon_1.assert.notCalled(stubBoop);
+            chai_1.expect(client.pony.region.entityUpdates.length).eql(0);
         });
         it('does nothing if cannot perform action', () => {
-            client.lastAction = 1000;
+            client.lastBoopOrKissAction = 1000;
             playerUtils_1.boop(client, 0);
-            chai_1.expect(client.pony.region.entityUpdates).eql([]);
+            chai_1.expect(client.pony.region.entityUpdates.length).eql(0);
         });
         it('does nothing if moving', () => {
             client.pony.vx = 1;
             playerUtils_1.boop(client, 0);
-            chai_1.expect(client.pony.region.entityUpdates).eql([]);
+            chai_1.expect(client.pony.region.entityUpdates.length).eql(0);
         });
     });
     describe('turnHead()', () => {
@@ -497,7 +499,7 @@ describe('playerUtils', () => {
         });
         it('does not update flags if cannot perform action', () => {
             const client = mocks_1.mockClient();
-            client.lastAction = Date.now() + 1000;
+            client.lastBoopOrKissAction = Date.now() + 1000;
             client.pony.state = 0;
             playerUtils_1.turnHead(client);
             chai_1.expect(client.pony.state).equal(0);
@@ -510,6 +512,8 @@ describe('playerUtils', () => {
         });
         it('updates entity flag to standing', () => {
             client.pony.state = 48 /* PonySitting */;
+            client.lastBoopOrKissAction = 0;
+            client.lastExpressionAction = 0;
             playerUtils_1.stand(client);
             chai_1.expect(client.pony.state).equal(0 /* PonyStanding */);
         });
@@ -535,7 +539,7 @@ describe('playerUtils', () => {
             chai_1.expect(client.pony.options.expr).equal(123);
         });
         it('does nothing if cannot perform action', () => {
-            client.lastAction = Date.now() + 1000;
+            client.lastBoopOrKissAction = Date.now() + 1000;
             client.pony.state = 0;
             playerUtils_1.stand(client);
             chai_1.expect(client.pony.state).equal(0);
@@ -569,7 +573,7 @@ describe('playerUtils', () => {
             chai_1.expect(client.pony.state).equal(48 /* PonySitting */);
         });
         it('does nothing if cannot perform action', () => {
-            client.lastAction = Date.now() + 1000;
+            client.lastBoopOrKissAction = Date.now() + 1000;
             client.pony.state = 0;
             playerUtils_1.sit(client, {});
             chai_1.expect(client.pony.state).equal(0);
@@ -598,7 +602,7 @@ describe('playerUtils', () => {
             chai_1.expect(client.pony.state).equal(64 /* PonyLying */);
         });
         it('does nothing if cannot perform action', () => {
-            client.lastAction = Date.now() + 1000;
+            client.lastBoopOrKissAction = Date.now() + 1000;
             client.pony.state = 0;
             playerUtils_1.lie(client);
             chai_1.expect(client.pony.state).equal(0);
@@ -631,14 +635,14 @@ describe('playerUtils', () => {
             chai_1.expect(client.pony.options.expr).equal(expressionEncoder_1.EMPTY_EXPRESSION);
         });
         it('does nothing if already flying', () => {
-            client.lastAction = Date.now() + 1000;
+            client.lastBoopOrKissAction = Date.now() + 1000;
             client.pony.state = 80 /* PonyFlying */;
             playerUtils_1.fly(client);
             chai_1.expect(client.pony.state).equal(80 /* PonyFlying */);
             chai_1.expect(client.pony.options.expr).equal(123);
         });
         it('does nothing if cannot perform action', () => {
-            client.lastAction = Date.now() + 1000;
+            client.lastBoopOrKissAction = Date.now() + 1000;
             client.pony.state = 0;
             playerUtils_1.fly(client);
             chai_1.expect(client.pony.state).equal(0);
@@ -659,6 +663,8 @@ describe('playerUtils', () => {
             client.pony.options.expr = 123;
         });
         it('sends given action', () => {
+            client.lastExpressionAction = 0;
+            client.lastBoopOrKissAction = 0;
             playerUtils_1.expressionAction(client, 3 /* Yawn */);
             chai_1.expect(client.pony.region.entityUpdates).eql([
                 Object.assign({}, def, { entity: client.pony, flags: 8 /* Expression */ | 128 /* Action */, action: 3 /* Yawn */ }),
@@ -669,7 +675,7 @@ describe('playerUtils', () => {
             chai_1.expect(client.pony.options.expr).equal(expressionEncoder_1.EMPTY_EXPRESSION);
         });
         it('does nothing if cannot perform action', () => {
-            client.lastAction = Date.now() + 1000;
+            client.lastExpressionAction = Date.now() + 2500;
             playerUtils_1.expressionAction(client, 3 /* Yawn */);
             chai_1.expect(client.pony.region.entityUpdates).eql([]);
         });
@@ -680,6 +686,7 @@ describe('playerUtils', () => {
         });
         it('updates last expression action', () => {
             client.lastExpressionAction = 0;
+            client.lastBoopOrKissAction = 0;
             playerUtils_1.expressionAction(client, 3 /* Yawn */);
             chai_1.expect(client.lastExpressionAction).greaterThan(Date.now());
         });

@@ -40,8 +40,9 @@ function default_1(server, settings, world) {
         const header = 'data:image/gif;base64,';
         const buffer = Buffer.from(image.substr(header.length), 'base64');
         const magick = /^win/.test(process.platform) ? 'magick' : 'convert';
-        const command = `${magick} -dispose 3 -delay ${100 / fps} -loop 0 "${filePath}" -crop ${width}x${height} `
+        const command = `${magick} -dispose Background -delay ${100 / fps} -loop 0 "${filePath}" -crop ${width}x${height} `
             + `+repage${lodash_1.repeat(' +delete', remove)} "${filePath.replace(/png$/, 'gif')}"`;
+        console.log('executing ' + command);
         fs.writeFileAsync(filePath, buffer)
             .then(() => serverUtils_1.execAsync(command))
             .then(() => res.send({ name }));

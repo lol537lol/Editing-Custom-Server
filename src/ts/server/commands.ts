@@ -1,6 +1,6 @@
 import { range, compact, escapeRegExp } from 'lodash';
 import {
-	MessageType, ChatType, Expression, Eye, Muzzle, Action, Season, Holiday, Weather, toAnnouncementMessageType,
+	MessageType, ChatType, Expression, Eye, Muzzle, Action, Weather, toAnnouncementMessageType,
 } from '../common/interfaces';
 import { hasRole } from '../common/accountUtils';
 import { butterfly, bat, firefly, cloud, getEntityType, getEntityTypeName } from '../common/entities';
@@ -17,7 +17,7 @@ import {
 	setEntityExpression, execAction, teleportTo
 } from './playerUtils';
 import { ServerLiveSettings, GameServerSettings } from '../common/adminInterfaces';
-import { isCommand, processCommand, clamp, flatten, includes, randomPoint } from '../common/utils';
+import { isCommand, processCommand, clamp, flatten, includes, randomPoint, parseSeason, parseHoliday } from '../common/utils';
 import { createNotifyUpdate, createShutdownServer } from './api/internal';
 import { logger } from './logger';
 import { pathTo } from './paths';
@@ -81,25 +81,6 @@ function adminModChat(names: string[], help: string, role: string, type: Message
 	return command(names, help, role, ({ }, client, message, _, __, settings) => {
 		sayToEveryone(client, message, filterBadWords(message), type, settings);
 	});
-}
-
-function parseSeason(value: string): Season | undefined {
-	switch (value.toLowerCase()) {
-		case 'spring': return Season.Spring;
-		case 'summer': return Season.Summer;
-		case 'autumn': return Season.Autumn;
-		case 'winter': return Season.Winter;
-		default: return undefined;
-	}
-}
-
-function parseHoliday(value: string): Holiday | undefined {
-	switch (value.toLowerCase()) {
-		case 'none': return Holiday.None;
-		case 'halloween': return Holiday.Halloween;
-		case 'christmas': return Holiday.Christmas;
-		default: return undefined;
-	}
 }
 
 function parseWeather(value: string): Weather | undefined {
@@ -196,8 +177,9 @@ export function createCommands(world: World): Command[] {
 		command(['t', 'think'], '/t - thinking balloon', '', shouldNotBeCalled),
 		command(['w', 'whisper'], '/w <name> - whisper to player', '', shouldNotBeCalled),
 		command(['r', 'reply'], '/r - reply to whisper', '', shouldNotBeCalled),
+		command(['shrug'], '/shrug - ¯\\_(ツ)_/¯', '', shouldNotBeCalled),
 		command(['e'], '/e - set permanent expression', '', ({ }, { pony }, message) => {
-			pony.exprPermanent = parseExpression(message);
+			pony.exprPermanent = parseExpression(message, true);
 			setEntityExpression(pony, undefined, 0);
 		}),
 
@@ -206,7 +188,7 @@ export function createCommands(world: World): Command[] {
 			execAction(client, Action.TurnHead, settings);
 		}),
 		command(['boop', ')'], '/boop or /) - a boop', '', ({ }, client, message, _, __, settings) => {
-			const expression = parseExpression(message);
+			const expression = parseExpression(message, true);
 
 			if (expression) {
 				setEntityExpression(client.pony, expression, 800);
@@ -274,7 +256,9 @@ export function createCommands(world: World): Command[] {
 		action(['yawn'], Action.Yawn),
 		action(['laugh', 'lol', 'haha', 'хаха', 'jaja'], Action.Laugh),
 		action(['sneeze', 'achoo'], Action.Sneeze),
+		action(['excite', 'tada'], Action.Excite),
 		action(['magic'], Action.Magic),
+		action(['kiss'], Action.Kiss),
 
 		// house
 		command(['savehouse'], '/savehouse - saves current house setup', '', async ({ }, client) => {
@@ -342,8 +326,10 @@ export function createCommands(world: World): Command[] {
 			client.reporter.systemLog(`House unlocked`);
 		}),
 		command(['removetoolbox'], '/removetoolbox - removes toolbox from the house', '', ({ world }, client) => {
-			if (!isValidMapForEditing(client.map, client, false, true))
+			if (!isValidMapForEditing(client.map, client, true, true))
 				return;
+
+			client.lastMapLoadOrSave = Date.now();
 
 			removeToolbox(world, client.map);
 
@@ -351,8 +337,10 @@ export function createCommands(world: World): Command[] {
 			client.reporter.systemLog(`Toolbox removed`);
 		}),
 		command(['restoretoolbox'], '/restoretoolbox - restores toolbox to the house', '', ({ }, client) => {
-			if (!isValidMapForEditing(client.map, client, false, true))
+			if (!isValidMapForEditing(client.map, client, true, true))
 				return;
+
+			client.lastMapLoadOrSave = Date.now();
 
 			restoreToolbox(world, client.map);
 
@@ -370,10 +358,6 @@ export function createCommands(world: World): Command[] {
 			const query = { account: client.account._id, name: { $regex: regex } };
 			await swapCharacter(client, world, query);
 		}),
-		command(['s1'], '', 'sup1', shouldNotBeCalled),
-		command(['s2'], '', 'sup2', shouldNotBeCalled),
-		command(['s3'], '', 'sup3', shouldNotBeCalled),
-		command(['ss'], '/ss - supporter text', 'sup1', shouldNotBeCalled),
 
 		// mod
 		adminModChat(['m'], '/m - mod text', 'mod', MessageType.Mod),
@@ -608,7 +592,7 @@ chatTypes.set('w', ChatType.Whisper);
 chatTypes.set('whisper', ChatType.Whisper);
 
 export function parseCommand(text: string, type: ChatType): { command?: string; args: string; type: ChatType; } {
-	if (!isCommand(text)) {
+	if (!isCommand(text) || text.toLowerCase().startsWith('/shrug')) {
 		return { args: text, type };
 	}
 

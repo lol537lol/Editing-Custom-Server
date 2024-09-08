@@ -9,10 +9,11 @@ import { faComment, faAngleDoubleRight } from '../../../client/icons';
 import { isInParty } from '../../../client/partyUtils';
 import { handleActionCommand } from '../../../client/playerActions';
 import { hasHeadAnimation } from '../../../common/pony';
-import { AutocompleteState, autocompleteMesssage, replaceEmojis } from '../../../client/emoji';
+import { AutocompleteState, autocompleteMesssage, replaceEmojis, emojis } from '../../../client/emoji';
 import { replaceNodes } from '../../../client/htmlUtils';
 import { invalidEnumReturn } from '../../../common/utils';
 import { findMatchingEntityNames, findEntityOrMockByAnyMeans, findBestEntityByName } from '../../../client/handlers';
+import { sample } from 'lodash';
 
 const chatTypeNames: string[] = [];
 const chatTypeClasses: string[] = [];
@@ -33,7 +34,7 @@ setupChatType(ChatType.Think, 'think');
 setupChatType(ChatType.PartyThink, 'party think');
 
 function isActionCommand(message: string) {
-	return /^\/(yawn|sneeze|achoo|laugh|lol|haha|хаха|jaja)/i.test(message);
+	return /^\/(yawn|sneeze|excite|tada|achoo|laugh|lol|haha|хаха|jaja)/i.test(message);
 }
 
 @Component({
@@ -45,6 +46,8 @@ export class ChatBox implements AfterViewInit, OnDestroy {
 	readonly maxSayLength = SAY_MAX_LENGTH;
 	readonly commentIcon = faComment;
 	readonly sendIcon = faAngleDoubleRight;
+	readonly emotes = emojis;
+	emojiBoxState = 'none';
 	@ViewChild('inputElement', { static: true }) inputElement!: ElementRef;
 	@ViewChild('typeBox', { static: true }) typeBox!: ElementRef;
 	@ViewChild('typePrefix', { static: true }) typePrefix!: ElementRef;
@@ -54,6 +57,7 @@ export class ChatBox implements AfterViewInit, OnDestroy {
 	isOpen = false;
 	message: string | undefined = '';
 	chatType = ChatType.Say;
+	btnEmoji = emojis[0].names[0];
 	private pasted = false;
 	private lastMessages: string[] = [];
 	private state: AutocompleteState = {};
@@ -91,6 +95,21 @@ export class ChatBox implements AfterViewInit, OnDestroy {
 	}
 	ngOnDestroy() {
 		this.subscriptions.forEach(s => s.unsubscribe());
+	}
+	addEmoji(emoji: string) {
+		this.toggleEmojiBox();
+		if (!this.message) {
+			this.message = emoji;
+		} else if (this.input.maxLength > this.message.length) {
+			this.message += emoji;
+		}
+	}
+	toggleEmojiBox() {
+		if (this.emojiBoxState === 'none') {
+			this.emojiBoxState = 'inline-block';
+		} else {
+			this.emojiBoxState = 'none';
+		}
 	}
 	send(_event: Event | undefined) {
 		let chatType = this.chatType;
@@ -225,7 +244,14 @@ export class ChatBox implements AfterViewInit, OnDestroy {
 	}
 	private say(message: string, chatType: ChatType, entityId: number): boolean {
 		this.game.lastChatMessageType = chatType;
-		return !!this.game.send(server => server.say(entityId, message, chatType));
+		if (message.toLowerCase().startsWith('/shrug')) {
+			var rawMessage = message.substring(6);
+			return !!this.game.send(server =>
+				server.say(entityId, ((rawMessage !== '') ? rawMessage + ' ' : '') + `¯\\_(ツ)_/¯`,
+				chatType));
+		} else {
+			return !!this.game.send(server => server.say(entityId, message, chatType));
+		}
 	}
 	private changeChatType(e: KeyboardEvent, chatType: ChatType) {
 		this.chatType = chatType;
@@ -259,6 +285,7 @@ export class ChatBox implements AfterViewInit, OnDestroy {
 	}
 	private close() {
 		if (this.isOpen) {
+			this.emojiBoxState = 'none';
 			this.input.blur();
 			this.isOpen = false;
 			this.chatBox.nativeElement.hidden = true;
@@ -272,6 +299,11 @@ export class ChatBox implements AfterViewInit, OnDestroy {
 		} else {
 			this.open();
 		}
+	}
+	onMouseEnterEmojiButton(event: MouseEvent) {
+		if (!event.target) return;
+		const emoji = sample(emojis)!;
+		this.btnEmoji = emoji.names[0];
 	}
 	toggleChatType() {
 		const chatTypes = getChatTypes(this.game);

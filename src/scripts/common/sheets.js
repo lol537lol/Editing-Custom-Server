@@ -55,7 +55,7 @@ const exampleCM = [
     colors_1.BLUE, colors_1.CYAN, colors_1.CYAN, colors_1.CYAN, colors_1.BLUE,
     colors_1.BLUE, colors_1.BLUE, colors_1.BLUE, colors_1.BLUE, colors_1.BLUE,
 ];
-const frontLegsCount = 39;
+const frontLegsCount = 40;
 const backLegsCount = 27;
 const frontLegsSheet = {
     width: 55,
@@ -485,6 +485,7 @@ function state(frames, frontLegs, frontFarLegs, backLegs, backFarLegs, head, bod
         name: '',
         loop: false,
         fps: 24,
+        disableHeadTurnFrames: 0,
         frames: lodash_1.times(frames, i => (Object.assign({}, ponyAnimations_1.createBodyFrame([]), { head: (head || ones)[i], body: (body || ones)[i], wing: (wing && wing[i]) || 0, tail: (tail || zeros)[i], frontLeg: (frontLegs || ones)[i], frontFarLeg: (frontFarLegs || ones)[i], backLeg: (backLegs || ones)[i], backFarLeg: (backFarLegs || ones)[i] }))),
     };
     return state;

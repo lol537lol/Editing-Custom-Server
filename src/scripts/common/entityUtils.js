@@ -56,6 +56,18 @@ function getBoopRect(entity) {
     return rect_1.rect(entity.x + (right ? 0.6 : -0.9) * (sitting ? 0.6 : 1), entity.y - 0.2, 0.3, 0.4);
 }
 exports.getBoopRect = getBoopRect;
+function getKissRect(entity) {
+    const right = utils_1.hasFlag(entity.state, 2 /* FacingRight */);
+    const sitting = isPonySitting(entity);
+    return rect_1.rect(entity.x + (right ? 0.4 : -0.8) * (sitting ? 0.6 : 1), entity.y - 0.225, 0.4, 0.45);
+}
+exports.getKissRect = getKissRect;
+function getSneezeRect(entity) {
+    const right = utils_1.hasFlag(entity.state, 2 /* FacingRight */);
+    const sitting = isPonySitting(entity);
+    return rect_1.rect(entity.x + (right ? 0.45 : -0.95) * (sitting ? 0.6 : 1), entity.y - 0.25, 0.6, 0.5);
+}
+exports.getSneezeRect = getSneezeRect;
 function isMoving(entity) {
     return entity.vx !== 0 || entity.vy !== 0;
 }
@@ -115,10 +127,10 @@ function canBoop(pony) {
     return isIdle(pony);
 }
 exports.canBoop = canBoop;
-function canBoop2(entity) {
+function canBoopOrKiss(entity) {
     return !isMoving(entity) && (isPonyStanding(entity) || isPonySitting(entity) || isPonyLying(entity) || isPonyFlying(entity));
 }
-exports.canBoop2 = canBoop2;
+exports.canBoopOrKiss = canBoopOrKiss;
 // entity player state
 function isHidden(entity) {
     return (entity.playerState & 2 /* Hidden */) !== 0;

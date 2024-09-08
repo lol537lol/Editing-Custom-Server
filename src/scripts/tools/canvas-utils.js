@@ -1,6 +1,8 @@
 "use strict";
+/// <reference path="../../typings/my.d.ts" />
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs = require("fs");
+const path = require("path");
 const canvas_1 = require("canvas");
 function loadImage(filePath) {
     const image = new canvas_1.Image();
@@ -145,6 +147,13 @@ function isCanvasEmpty(canvas) {
 }
 exports.isCanvasEmpty = isCanvasEmpty;
 function saveCanvas(filePath, canvas) {
+    try {
+        fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    }
+    catch (e) {
+        if (e.code !== 'EEXIST')
+            throw e;
+    }
     fs.writeFileSync(filePath, canvas.toBuffer());
 }
 exports.saveCanvas = saveCanvas;

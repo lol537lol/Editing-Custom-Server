@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SEASON = 1 /* Summer */;
+exports.SEASON = 8 /* Spring */;
 exports.HOLIDAY = 0 /* None */;
 exports.SECOND = 1000;
 exports.MINUTE = exports.SECOND * 60;
@@ -9,14 +9,15 @@ exports.DAY = exports.HOUR * 24;
 exports.WEEK = exports.DAY * 7;
 exports.MONTH = exports.DAY * 30;
 exports.YEAR = exports.DAY * 365;
-exports.BATCH_SIZE_MAX = 10000;
+exports.BATCH_VERTEX_CAPACITY_MAX = 16384;
 exports.MAX_VELOCITY = 16; // do not change
+exports.NEW_ACCOUNT_PONY_NAME = 'Pony';
 exports.PONY_TYPE = 1;
 exports.PONY_SPEED_TROT = 4; // tiles per sec
 exports.PONY_SPEED_WALK = 2; // tiles per sec
 exports.SAYS_TIME_MIN = 5; // sec
 exports.SAYS_TIME_MAX = 8; // sec
-exports.TILE_CHANGE_RANGE = 5;
+exports.TILE_CHANGE_RANGE = 25;
 exports.EXPRESSION_TIMEOUT = 7000; // ms
 exports.FLY_DELAY = 0.4; // sec
 exports.SERVER_FPS = 10;
@@ -27,8 +28,9 @@ exports.MAP_DISCARD_TIMEOUT = 15 * exports.MINUTE;
 exports.MAP_SWITCH_DELAY = 1 * exports.SECOND;
 exports.MAP_SWITCHES_PER_UPDATE = 1;
 exports.JOINS_PER_UPDATE = 1;
+exports.LIGHT_VOLUME_SCALE = 0.81;
 exports.DEFAULT_CHATLOG_OPACITY = 35;
-exports.MAX_CHATLOG_RANGE = 11;
+exports.MAX_CHATLOG_RANGE = 13;
 exports.MIN_CHATLOG_RANGE = 2;
 function isChatlogRangeUnlimited(range) {
     return !range || range < exports.MIN_CHATLOG_RANGE || range >= exports.MAX_CHATLOG_RANGE;
@@ -39,14 +41,14 @@ exports.WATER_HEIGHT = [0, -1, -2, -1];
 exports.CM_SIZE = 5;
 exports.MIN_SCALE = 1;
 exports.MAX_SCALE = 4;
-exports.SAY_MAX_LENGTH = 64;
-exports.PLAYER_NAME_MAX_LENGTH = 20;
-exports.PLAYER_DESC_MAX_LENGTH = 40;
+exports.SAY_MAX_LENGTH = 256;
+exports.PLAYER_NAME_MAX_LENGTH = 30;
+exports.PLAYER_DESC_MAX_LENGTH = 60;
 exports.ACCOUNT_NAME_MIN_LENGTH = 1;
 exports.ACCOUNT_NAME_MAX_LENGTH = 32;
 exports.MAX_FILTER_WORDS_LENGTH = 1000;
-exports.PARTY_LIMIT = 30;
-exports.FRIENDS_LIMIT = 100;
+exports.PARTY_LIMIT = 50;
+exports.FRIENDS_LIMIT = 250;
 exports.HIDE_LIMIT = 1000;
 exports.UNHIDE_TIMEOUT = exports.HOUR;
 exports.MIN_HIDE_TIME = exports.HOUR;
@@ -108,6 +110,7 @@ exports.MONTH_NAMES_EN = [
 ];
 exports.OFFLINE_PONY = 'DAKVlZUvLy82QIxomgCfgAYAGIAoQGEBwAEERFEUEA==';
 exports.SUPPORTER_PONY = 'CAfz9PUFLUnapSD/1wD5aFT////+hHM2QIJkJ8AQLkkADAA6jXrsBT1Iw+wBMJOqoW1C2oW1AAI=';
+exports.DISCORD_PONY = 'EAlyidplAf/U7f/r9//09vf///9//9QsLzOXp+E2QQJiBLQBPwAMADqNANFZmyFFGhKgorM8ICAEIBAgJGZyzAzMzMzAwMzMzAAAwA==';
 // patreon reward tier IDs
 exports.rewardLevel1 = '2255086';
 exports.rewardLevel2 = '2411886';
@@ -148,7 +151,7 @@ exports.PAST_SUPPORTER_REWARDS = [
 exports.GENERAL_RULES = [
     `Be kind to others`,
     `Don't spam`,
-    `Don't use multiple accounts`,
+    `Don't create multiple accounts`,
     `Don't modify the game with hacks or scripts`,
     `Don't encourage behaviour violating the rules`,
     `Violation of the rules may result in temporary or permanent ban`,

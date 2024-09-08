@@ -118,15 +118,15 @@ function drawTheMap(canvas, map, info, scale, grid) {
         camera.h = map.height * constants_1.tileHeight;
         const tileSets = tileUtils_1.createTileSets(ponyInfo_1.mockPaletteManager, info.season, map.type);
         const lightData = timeUtils_1.createLightData(info.season);
-        const drawOptions = Object.assign({}, interfaces_1.defaultDrawOptions, { tileGrid: grid, shadowColor: timeUtils_1.getShadowColor(lightData, timeUtils_1.HOUR_LENGTH * 12) });
+        const drawOptions = Object.assign({}, interfaces_1.defaultDrawOptions, { tileGrid: grid, shadowColor: timeUtils_1.getShadowColor(lightData, timeUtils_1.HOUR_LENGTH * 12), season: info.season });
         const ignoreTypes = [
-            entities_1.cloud, entities_1.pony, entities_1.apple, entities_1.apple2, entities_1.appleGreen, entities_1.appleGreen2, entities_1.orange, entities_1.orange2, entities_1.candy, entities_1.gift1, entities_1.gift2
+            entities_1.cloud, entities_1.pony, entities_1.apple, entities_1.apple2, entities_1.appleGreen, entities_1.appleGreen2, entities_1.orange, entities_1.orange2, entities_1.candy, entities_1.gift1, entities_1.gift2, entities_1.bunny
         ].map(e => e.type);
         const shouldDraw = (e) => {
             return !utils_1.hasFlag(e.flags, 16 /* Debug */) && !entityUtils_1.isCritter(e) && !utils_1.includes(ignoreTypes, e.type);
         };
         map.entitiesDrawable = info.entities
-            .map(({ type, id, x, y }) => entities_1.createAnEntity(type, id, x, y, {}, ponyInfo_1.mockPaletteManager, interfaces_1.defaultWorldState))
+            .map(({ type, id, x, y }) => entities_1.createAnEntity(type, id, x, y, {}, ponyInfo_1.mockPaletteManager, { season: info.season }))
             .filter(shouldDraw);
         worldMap_1.updateMap(map, 0);
         draw_1.drawMap(batch, map, camera, {}, drawOptions, tileSets, []);
@@ -153,7 +153,7 @@ function drawMinimap(canvas, map, info, scale) {
         }
     }
     map.entities = info.entities
-        .map(({ type, id, x, y }) => entities_1.createAnEntity(type, id, x, y, {}, ponyInfo_1.mockPaletteManager, interfaces_1.defaultWorldState));
+        .map(({ type, id, x, y }) => entities_1.createAnEntity(type, id, x, y, {}, ponyInfo_1.mockPaletteManager, { season: info.season }));
     for (let i = 1; i <= 2; i++) {
         for (const e of map.entities) {
             if (e.minimap && e.minimap.order === i) {

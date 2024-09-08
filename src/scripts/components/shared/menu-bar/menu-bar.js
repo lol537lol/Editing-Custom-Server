@@ -9,10 +9,12 @@ const model_1 = require("../../services/model");
 const clientUtils_1 = require("../../../client/clientUtils");
 const settingsService_1 = require("../../services/settingsService");
 const constants_1 = require("../../../common/constants");
+const modal_1 = require("ngx-bootstrap/modal");
 let MenuBar = class MenuBar {
-    constructor(model, settings) {
+    constructor(model, settings, modalService) {
         this.model = model;
         this.settings = settings;
+        this.modalService = modalService;
         this.signUpProviders = data_1.signUpProviders;
         this.signInProviders = data_1.signInProviders;
         this.starIcon = icons_1.faStar;
@@ -54,6 +56,9 @@ let MenuBar = class MenuBar {
         this.settings.account.hidden = status === 'invisible';
         this.settings.saveAccountSettings(this.settings.account);
     }
+    openSettings(settingsModal) {
+        this.modalService.show(settingsModal, { ignoreBackdropClick: true });
+    }
 };
 tslib_1.__decorate([
     core_1.Input(),
@@ -91,7 +96,7 @@ MenuBar = tslib_1.__decorate([
         templateUrl: 'menu-bar.pug',
         styleUrls: ['menu-bar.scss'],
     }),
-    tslib_1.__metadata("design:paramtypes", [model_1.Model, settingsService_1.SettingsService])
+    tslib_1.__metadata("design:paramtypes", [model_1.Model, settingsService_1.SettingsService, modal_1.BsModalService])
 ], MenuBar);
 exports.MenuBar = MenuBar;
 //# sourceMappingURL=menu-bar.js.map

@@ -16,9 +16,14 @@ const SELECTED_ENTITY_BOUNDS = color_1.withAlphaFloat(colors_1.ORANGE, 0.5);
 function drawEntities(batch, entities, camera, options) {
     const drawHidden = options.drawHidden;
     let entitiesDrawn = 0;
-    for (const entity of entities) {
-        if ((!entityUtils_1.isHidden(entity) || drawHidden) && camera_1.isBoundsVisible(camera, entity.bounds, entity.x, entity.y)) {
+    let depthStep = 1.0 / entities.length;
+    for (let entity of entities) {
+        if (camera_1.isBoundsVisible(camera, entity.bounds, entity.x, entity.y) && (!entityUtils_1.isHidden(entity) || drawHidden)) {
+            const depth = depthStep * entitiesDrawn;
+            entity.depth = depth;
+            batch.depth = depth;
             if (entity.type === constants_1.PONY_TYPE) {
+                batch.depth = -batch.depth;
                 pony_1.drawPonyEntity(batch, entity, options);
                 entitiesDrawn++;
             }
@@ -41,36 +46,43 @@ function drawEntities(batch, entities, camera, options) {
 }
 function drawEntityLights(batch, entities, camera, options) {
     const drawHidden = options.drawHidden;
+    let drawn = 0;
     for (const entity of entities) {
         if (DEVELOPMENT && (entity.type !== constants_1.PONY_TYPE && !entity.drawLight)) {
             console.error('Cannot draw entity light', entity);
         }
-        if ((!entityUtils_1.isHidden(entity) || drawHidden) && camera_1.isBoundsVisible(camera, entity.lightBounds, entity.x, entity.y)) {
+        if (camera_1.isBoundsVisible(camera, entity.lightBounds, entity.x, entity.y) && (!entityUtils_1.isHidden(entity) || drawHidden)) {
             if (entity.type === constants_1.PONY_TYPE) {
                 pony_1.drawPonyEntityLight(batch, entity, options);
             }
             else {
                 entity.drawLight(batch, options);
             }
+            ++drawn;
         }
     }
+    return drawn;
 }
 exports.drawEntityLights = drawEntityLights;
 function drawEntityLightSprites(batch, entities, camera, options) {
     const drawHidden = options.drawHidden;
+    let drawn = 0;
     for (const entity of entities) {
         if (DEVELOPMENT && (entity.type !== constants_1.PONY_TYPE && !entity.drawLightSprite)) {
             console.error('Cannot draw entity light sprite', entity);
         }
-        if ((!entityUtils_1.isHidden(entity) || drawHidden) && camera_1.isBoundsVisible(camera, entity.lightSpriteBounds, entity.x, entity.y)) {
+        if (camera_1.isBoundsVisible(camera, entity.lightSpriteBounds, entity.x, entity.y) && (!entityUtils_1.isHidden(entity) || drawHidden)) {
+            batch.depth = entity.depth;
             if (entity.type === constants_1.PONY_TYPE) {
                 pony_1.drawPonyEntityLightSprite(batch, entity, options);
             }
             else {
                 entity.drawLightSprite(batch, options);
             }
+            ++drawn;
         }
     }
+    return drawn;
 }
 exports.drawEntityLightSprites = drawEntityLightSprites;
 function hasDrawLight(entity) {
@@ -96,6 +108,7 @@ function hasLightSprite(entity) {
 exports.hasLightSprite = hasLightSprite;
 function drawMap(batch, map, camera, player, options, tileSets, selectedEntities) {
     TIMING && timing_1.timeStart('forEachRegion');
+    batch.depth = 1.0;
     if (BETA && options.engine === interfaces_1.Engine.Whiteness) {
         batch.drawRect(colors_1.WHITE, 0, 0, positionUtils_1.toScreenX(map.width), positionUtils_1.toScreenY(map.height));
     }
@@ -111,6 +124,7 @@ function drawMap(batch, map, camera, player, options, tileSets, selectedEntities
     TIMING && timing_1.timeEnd();
     TIMING && timing_1.timeStart('drawEntities');
     const entitiesDrawn = drawEntities(batch, map.entitiesDrawable, camera, options);
+    batch.depth = 1.0;
     TIMING && timing_1.timeEnd();
     if (BETA || TOOLS) {
         worldMap_1.forEachRegion(map, region => tileUtils_1.drawTilesDebugInfo(batch, region, camera, options));

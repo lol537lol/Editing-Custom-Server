@@ -35,7 +35,7 @@ export const routes: Routes = [
 @NgModule({
 	imports: [
 		BrowserModule,
-		RouterModule,
+		RouterModule.forRoot(routes, { anchorScrolling: 'enabled' }),
 		FormsModule,
 		HttpClientModule,
 		PopoverModule.forRoot(),
@@ -43,7 +43,6 @@ export const routes: Routes = [
 		TooltipModule.forRoot(),
 		// TypeaheadModule.forRoot(),
 		SharedModule,
-		RouterModule.forRoot(routes),
 		FontAwesomeModule,
 	],
 	declarations: [

@@ -11,7 +11,7 @@ let InstallButton = class InstallButton {
         this.closeIcon = icons_1.faTimes;
     }
     get canInstall() {
-        return this.installService.canInstall;
+        return false;
     }
     get isMobile() {
         return data_1.isMobile;

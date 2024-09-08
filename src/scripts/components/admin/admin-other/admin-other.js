@@ -4,7 +4,6 @@ const tslib_1 = require("tslib");
 const core_1 = require("@angular/core");
 const lodash_1 = require("lodash");
 const adminModel_1 = require("../../services/adminModel");
-const htmlUtils_1 = require("../../../client/htmlUtils");
 let AdminOther = class AdminOther {
     constructor(model) {
         this.model = model;
@@ -56,21 +55,6 @@ let AdminOther = class AdminOther {
     }
     resetSuspiciousPonies() {
         this.suspiciousPonies = this.model.state.loginServers[0].suspiciousPonies;
-    }
-    updatePatreon() {
-        this.model.server.updatePatreon();
-    }
-    updatePatreonToken(patreonToken) {
-        this.model.updateSettings({ patreonToken });
-    }
-    getLastPatreonData() {
-        this.model.getLastPatreonData()
-            .then(data => {
-            htmlUtils_1.showTextInNewTab(JSON.stringify(data, null, 2));
-        });
-    }
-    updatePastSupporters() {
-        this.model.updatePastSupporters();
     }
 };
 AdminOther = tslib_1.__decorate([

@@ -25,6 +25,7 @@ let ActionsModal = class ActionsModal {
         this.devIcon = icons_1.faCogs;
         this.dev = BETA;
         this.close = new core_1.EventEmitter();
+        this.notify = new core_1.EventEmitter();
         this.actions = buttonActions_1.createButtionActionActions();
         this.commands = buttonActions_1.createButtonCommandActions();
         this.emoteAction = buttonActions_1.expressionButtonAction(clientUtils_1.createExpression(1 /* Neutral */, 1 /* Neutral */, 0 /* Smile */));
@@ -70,12 +71,17 @@ let ActionsModal = class ActionsModal {
         if (BETA) {
             this.entityActions = model_1.getEntityNames().map(name => buttonActions_1.entityButtonAction(name));
         }
+        // not using timeout here causes some event ordering issues on mobile devices, and the modal stucks being open
+        // in case it still happens on some devices (unlikely), would make sense to increse the delay
+        setTimeout(() => this.notify.emit(), 250);
     }
     ngOnDestroy() {
         document.body.classList.remove('actions-modal-opened');
         this.game.editingActions = false;
         clearInterval(this.interval);
         this.subscription && this.subscription.unsubscribe();
+        this.close.emit(); // need to emit in case the menu wasn't closed with the Close button
+        this.notify.emit();
     }
     ok() {
         this.close.emit();
@@ -151,6 +157,10 @@ tslib_1.__decorate([
     core_1.Output(),
     tslib_1.__metadata("design:type", Object)
 ], ActionsModal.prototype, "close", void 0);
+tslib_1.__decorate([
+    core_1.Output(),
+    tslib_1.__metadata("design:type", Object)
+], ActionsModal.prototype, "notify", void 0);
 ActionsModal = tslib_1.__decorate([
     core_1.Component({
         selector: 'actions-modal',

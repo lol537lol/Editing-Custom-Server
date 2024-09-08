@@ -14,7 +14,7 @@ let InstallService = class InstallService {
         }
     }
     get canInstall() {
-        return !!this.installEvent || (DEVELOPMENT && localStorage.getItem('install'));
+        return false;
     }
     install() {
         if (!this.installEvent) {

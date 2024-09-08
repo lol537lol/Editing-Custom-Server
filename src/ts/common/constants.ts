@@ -1,6 +1,6 @@
 import { Season, Holiday } from './interfaces';
 
-export const SEASON: Season = Season.Summer;
+export const SEASON: Season = Season.Spring;
 export const HOLIDAY: Holiday = Holiday.None;
 
 export const SECOND = 1000;
@@ -11,9 +11,11 @@ export const WEEK = DAY * 7;
 export const MONTH = DAY * 30;
 export const YEAR = DAY * 365;
 
-export const BATCH_SIZE_MAX = 10000;
+export const BATCH_VERTEX_CAPACITY_MAX = 16384;
 
 export const MAX_VELOCITY = 16; // do not change
+
+export const NEW_ACCOUNT_PONY_NAME = 'Pony';
 
 export const PONY_TYPE = 1;
 export const PONY_SPEED_TROT = 4; // tiles per sec
@@ -22,7 +24,7 @@ export const PONY_SPEED_WALK = 2; // tiles per sec
 export const SAYS_TIME_MIN = 5; // sec
 export const SAYS_TIME_MAX = 8; // sec
 
-export const TILE_CHANGE_RANGE = 5;
+export const TILE_CHANGE_RANGE = 25;
 
 export const EXPRESSION_TIMEOUT = 7000; // ms
 export const FLY_DELAY = 0.4; // sec
@@ -37,8 +39,10 @@ export const MAP_SWITCH_DELAY = 1 * SECOND;
 export const MAP_SWITCHES_PER_UPDATE = 1;
 export const JOINS_PER_UPDATE = 1;
 
+export const LIGHT_VOLUME_SCALE = 0.81;
+
 export const DEFAULT_CHATLOG_OPACITY = 35;
-export const MAX_CHATLOG_RANGE = 11;
+export const MAX_CHATLOG_RANGE = 13;
 export const MIN_CHATLOG_RANGE = 2;
 
 export function isChatlogRangeUnlimited(range: number | undefined) {
@@ -52,14 +56,14 @@ export const CM_SIZE = 5;
 export const MIN_SCALE = 1;
 export const MAX_SCALE = 4;
 
-export const SAY_MAX_LENGTH = 64;
-export const PLAYER_NAME_MAX_LENGTH = 20;
-export const PLAYER_DESC_MAX_LENGTH = 40;
+export const SAY_MAX_LENGTH = 256;
+export const PLAYER_NAME_MAX_LENGTH = 30;
+export const PLAYER_DESC_MAX_LENGTH = 60;
 export const ACCOUNT_NAME_MIN_LENGTH = 1;
 export const ACCOUNT_NAME_MAX_LENGTH = 32;
 export const MAX_FILTER_WORDS_LENGTH = 1000;
-export const PARTY_LIMIT = 30;
-export const FRIENDS_LIMIT = 100;
+export const PARTY_LIMIT = 50;
+export const FRIENDS_LIMIT = 250;
 
 export const HIDE_LIMIT = 1000;
 export const UNHIDE_TIMEOUT = HOUR;
@@ -136,6 +140,7 @@ export const MONTH_NAMES_EN = [
 
 export const OFFLINE_PONY = 'DAKVlZUvLy82QIxomgCfgAYAGIAoQGEBwAEERFEUEA==';
 export const SUPPORTER_PONY = 'CAfz9PUFLUnapSD/1wD5aFT////+hHM2QIJkJ8AQLkkADAA6jXrsBT1Iw+wBMJOqoW1C2oW1AAI=';
+export const DISCORD_PONY = 'EAlyidplAf/U7f/r9//09vf///9//9QsLzOXp+E2QQJiBLQBPwAMADqNANFZmyFFGhKgorM8ICAEIBAgJGZyzAzMzMzAwMzMzAAAwA==';
 
 // patreon reward tier IDs
 export const rewardLevel1 = '2255086';
@@ -183,7 +188,7 @@ export const PAST_SUPPORTER_REWARDS = [
 export const GENERAL_RULES = [
 	`Be kind to others`,
 	`Don't spam`,
-	`Don't use multiple accounts`,
+	`Don't create multiple accounts`,
 	`Don't modify the game with hacks or scripts`,
 	`Don't encourage behaviour violating the rules`,
 	`Violation of the rules may result in temporary or permanent ban`,

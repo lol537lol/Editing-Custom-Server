@@ -155,8 +155,8 @@ const tearsRegex = /['`,]/;
 const verticalRightRegex = new RegExp(`^${any(exports.verticalEyesRight)}${tears}-?${any(exports.muzzlesRight)}$`);
 const verticalLeftRegex = new RegExp(`^${any(exports.muzzlesLeft)}-?${tears}${any(exports.verticalEyesLeft)}$`);
 const horizontalRegex = new RegExp(`^${any(exports.horizontalEyesRight)}(//)?${any(exports.horizontalMuzzles)}(//)?${any(exports.horizontalEyesLeft)}$`);
-function matchVertical(text, regex, flip, muzzleMap, eyesMap) {
-    if (/^([|]{2,}|BS|8x|x8|x-?x|\d+)$/i.test(text))
+function matchVertical(text, regex, flip, muzzleMap, eyesMap, command = false) {
+    if (!command && /^([|]{2,}|BS|8x|x8|x-?x|\d+)$/i.test(text))
         return undefined;
     const match = regex.exec(text);
     if (!match)
@@ -176,19 +176,19 @@ function matchVertical(text, regex, flip, muzzleMap, eyesMap) {
     const extra = (tearsRegex.test(match[2]) || tear) ? 8 /* Tears */ : 0 /* None */;
     return { right, left, muzzle, rightIris, leftIris, extra };
 }
-function matchHorizontal(text) {
-    if (/\.\.|--|vv|uu|qq|pp|nn|^\d+$/i.test(text)) {
+function matchHorizontal(text, command = false) {
+    if (!command && /\.\.|--|vv|uu|qq|pp|nn|^\d+$/i.test(text)) {
         return undefined;
     }
     if (/[a-zA-Z][a-z][a-z]|[A-Z]{3}/.test(text)) {
         const clear = text.replace(/[^a-z]/ig, '').toLowerCase();
-        if (clear.length === 3 && threeLetterWords.test(clear)) {
+        if (clear.length === 3 && (!command && threeLetterWords.test(clear))) {
             return undefined;
         }
     }
     if (/[a-z][a-z][.,*-]/i.test(text)) {
         const clear = text.replace(/[^a-z]/ig, '').toLowerCase();
-        if (clear.length === 2 && twoLetterWords.test(clear)) {
+        if (clear.length === 2 && (!command && twoLetterWords.test(clear))) {
             return undefined;
         }
     }
@@ -238,7 +238,7 @@ const constants = utils_1.createPlainMap({
     '😆': () => expression(23 /* X */, 23 /* X */, 5 /* SmileOpen */),
     '😟': () => expression(15 /* Sad */, 15 /* Sad */, 2 /* Neutral */),
     '😠': () => expression(19 /* Angry */, 19 /* Angry */, 0 /* Smile */),
-    '🤔': () => expression(1 /* Neutral */, 8 /* Frown2 */, 13 /* Kiss */),
+    '🤔': () => expression(1 /* Neutral */, 8 /* Frown2 */, 7 /* Concerned */),
     '😈': () => expression(19 /* Angry */, 19 /* Angry */, 0 /* Smile */, 1 /* Up */, 0 /* Forward */),
     '👿': () => expression(19 /* Angry */, 19 /* Angry */, 18 /* SmileTeeth */),
 });
@@ -256,7 +256,7 @@ function matchOther(text) {
         return constants[text] && constants[text]();
     }
 }
-function matchExpression(text) {
+function matchExpression(text, command = false) {
     if (/тот/ui.test(text)) {
         return undefined;
     }
@@ -264,16 +264,16 @@ function matchExpression(text) {
         .replace(/D{4,}/, 'DDD')
         .replace(/\\/g, '/')
         .replace(/\/{3,}/g, '//');
-    return matchVertical(text, verticalRightRegex, false, exports.muzzlesRight, exports.verticalEyesRight)
-        || matchVertical(text, verticalLeftRegex, true, exports.muzzlesLeft, exports.verticalEyesLeft)
-        || matchHorizontal(text)
+    return matchVertical(text, verticalRightRegex, false, exports.muzzlesRight, exports.verticalEyesRight, command)
+        || matchVertical(text, verticalLeftRegex, true, exports.muzzlesLeft, exports.verticalEyesLeft, command)
+        || matchHorizontal(text, command)
         || matchOther(text);
 }
 exports.matchExpression = matchExpression;
-function parseExpression(text) {
+function parseExpression(text, command = false) {
     const emoteMatch = /(?:^| )(\S+)\s*$/.exec(text);
     const emote = emoteMatch && emoteMatch[1].trim();
-    return emote ? matchExpression(emote) : undefined;
+    return emote ? matchExpression(emote, command) : undefined;
 }
 exports.parseExpression = parseExpression;
 function createMap(values) {

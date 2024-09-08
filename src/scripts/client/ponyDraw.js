@@ -174,12 +174,13 @@ function initializeToys(paletteManager) {
     }
 }
 exports.initializeToys = initializeToys;
-const zeroPoint = utils_1.point(0, 0);
+// const zeroPoint = point(0, 0);
 const wakes = [
     { ox: 21, oy: 60, behind: sprites.pony_wake_4, front: sprites.pony_wake_3 },
     { ox: 24, oy: 60, behind: sprites.pony_wake_6, front: sprites.pony_wake_5 },
     { ox: 18, oy: 51, behind: sprites.pony_wake_2, front: sprites.pony_wake_1 },
 ];
+// swimming effects of different size; add value per tail
 const wakeIndices = [0, 2, 1, 0, 2, 2, 2, 0, 2, 2, 2, 1, 2, 2, 2, 1, 1, 1, 1, 1, 2, 2, 2, 2, 1, 1, 1, 2, 2, 2, 1];
 function getWakeIndex(info) {
     const tail = info.tail && info.tail.type || 0;
@@ -188,6 +189,7 @@ function getWakeIndex(info) {
 function drawPony(batch, info, state, ponyX, ponyY, options) {
     const frame = getPonyAnimationFrame(state.animation, state.animationFrame, ponyAnimations_1.defaultBodyFrame);
     const headFrame = getPonyAnimationFrame(state.headAnimation || ponyAnimations_1.defaultHeadAnimation, state.headAnimationFrame, ponyAnimations_1.defaultHeadFrame);
+    const headAnimationProperties = (state.headAnimation || ponyAnimations_1.defaultHeadAnimation).properties;
     const baseX = ponyX - ponyUtils_1.PONY_WIDTH / 2;
     const baseY = ponyY - ponyUtils_1.PONY_HEIGHT;
     const x = baseX + frame.bodyX;
@@ -240,9 +242,10 @@ function drawPony(batch, info, state, ponyX, ponyY, options) {
     const hatOffsetY = maneBehindOffsetY;
     let hatOffset = at(offsets_1.HEAD_ACCESSORY_OFFSETS, info.mane ? info.mane.type : 0);
     const noMane = !info.mane || hasNoMane(info.mane.type);
-    if (info.headAccessory !== undefined && info.headAccessory.type === 20) {
-        hatOffset = zeroPoint;
-    }
+    // temp front layer hat test
+    // if (info.headAccessory !== undefined && info.headAccessory.type === 20) {
+    //	hatOffset = zeroPoint;
+    //}
     if (draw(options, 16 /* Behind */)) {
         // far wing
         drawSet(batch, wing, info.wings, x + FAR_WING_OX + wingOffset.x, y + FAR_WING_OY + wingOffset.y, colors_1.FAR_COLOR);
@@ -389,7 +392,7 @@ function drawPony(batch, info, state, ponyX, ponyY, options) {
     if (headTurned) {
         drawSet(batch, sprites.behindManes, info.mane, 0, maneBehindOffsetY, colors_1.WHITE);
     }
-    drawHead(batch, info, 0, 0, headSprite, headFrame, state, options, headFlip, maneOffsetY);
+    drawHead(batch, info, 0, 0, headSprite, headFrame, headAnimationProperties, state, options, headFlip, maneOffsetY);
     drawSet(batch, sprites.headAccessories, info.headAccessory, hatOffset.x, hatOffset.y + hatOffsetY, colors_1.WHITE);
     batch.restore();
     if (swimming) {
@@ -397,7 +400,7 @@ function drawPony(batch, info, state, ponyX, ponyY, options) {
     }
 }
 exports.drawPony = drawPony;
-function drawHead(batch, info, x, y, headSprites, headFrame, { blinkFrame, expression, holding, blushColor, drawFaceExtra }, options, flip, maneOffsetY) {
+function drawHead(batch, info, x, y, headSprites, headFrame, animationProperties, { blinkFrame, expression, holding, blushColor, drawFaceExtra }, options, flip, maneOffsetY) {
     const extraOffset = at(offsets_1.EXTRA_ACCESSORY_OFFSETS, info.mane && info.mane.type) || pointZero;
     const extraX = x + extraOffset.x;
     const extraY = y + extraOffset.y;
@@ -426,16 +429,16 @@ function drawHead(batch, info, x, y, headSprites, headFrame, { blinkFrame, expre
             irisRight = expression.rightIris;
             // make sure eyes are closed if sleeping
             if (utils_1.hasFlag(expression.extra, 2 /* Zzz */)) {
-                if (!interfaces_1.isEyeSleeping(eyeLeftBase)) {
+                if (interfaces_1.getEyeOpenness(eyeLeftBase) !== 0) {
                     eyeLeftBase = 6 /* Closed */;
                 }
-                if (!interfaces_1.isEyeSleeping(eyeRightBase)) {
+                if (interfaces_1.getEyeOpenness(eyeRightBase) !== 0) {
                     eyeRightBase = 6 /* Closed */;
                 }
             }
         }
-        const eyeRight = getEyeFrame(info.eyeOpennessRight || 1, eyeRightBase, headFrame.right, blinkFrame);
-        const eyeLeft = getEyeFrame(info.eyeOpennessLeft || 1, eyeLeftBase, headFrame.left, blinkFrame);
+        const eyeRight = getEyeFrame(info.eyeOpennessRight || 1, eyeRightBase, headFrame.right, animationProperties, blinkFrame);
+        const eyeLeft = getEyeFrame(info.eyeOpennessLeft || 1, eyeLeftBase, headFrame.left, animationProperties, blinkFrame);
         const eyeFrameLeft = flip ? eyeRight : eyeLeft;
         const eyeFrameRight = flip ? eyeLeft : eyeRight;
         const eyeColorLeft = flip ? info.eyeColorRight : info.eyeColorLeft;
@@ -473,11 +476,7 @@ function drawHead(batch, info, x, y, headSprites, headFrame, { blinkFrame, expre
         }
     }
     if (draw(options, 32 /* Body */) && draw(options, 8192 /* Nose */)) {
-        const muzzle = holding ?
-            0 /* Smile */ :
-            headFrame.mouth === -1 ?
-                (expression ? expression.muzzle : info.muzzle) :
-                headFrame.mouth;
+        const muzzle = getMouthFrame(!!holding, expression, headFrame.mouth, info.muzzle, animationProperties);
         const noses = at(sprites.noses, muzzle);
         const nose = att(noses, info.nose && info.nose.type)[0];
         nose.mouth && batch.drawSprite(nose.mouth, colors_1.WHITE, info.defaultPalette, x, y);
@@ -494,11 +493,12 @@ function drawHead(batch, info, x, y, headSprites, headFrame, { blinkFrame, expre
     if (draw(options, 2 /* Front2 */)) {
         drawSet(batch, sprites.facialHair, info.facialHair, x, y, colors_1.WHITE);
     }
-    const skipTopAndFrontMane = info.headAccessory !== undefined && info.headAccessory.type === 20;
+    // temp front layer hat test
+    // const skipTopAndFrontMane = info.headAccessory !== undefined && info.headAccessory.type === 20;
     if (draw(options, 4096 /* FrontMane */)) {
         drawSet(batch, sprites.backFrontManes, info.backMane, x, y + maneOffsetY, colors_1.WHITE);
     }
-    if (draw(options, 2048 /* TopMane */) && !skipTopAndFrontMane) {
+    if (draw(options, 2048 /* TopMane */) /* && !skipTopAndFrontMane*/) {
         drawSet(batch, sprites.topManes, info.mane, x, y, colors_1.WHITE);
     }
     if (toy !== undefined) {
@@ -526,7 +526,7 @@ function drawHead(batch, info, x, y, headSprites, headFrame, { blinkFrame, expre
     if (!frontEarAccessory && draw(options, 1 /* Front */) && draw(options, 256 /* CloseEar */)) {
         drawSet(batch, sprites.earAccessories, info.earAccessory, x + earAccessoryOffset.x, y + earAccessoryOffset.y, colors_1.WHITE);
     }
-    if (draw(options, 4096 /* FrontMane */) && !skipTopAndFrontMane) {
+    if (draw(options, 4096 /* FrontMane */) /* && !skipTopAndFrontMane */) {
         drawSet(batch, sprites.frontManes, info.mane, x, y + maneOffsetY, colors_1.WHITE);
     }
     if (frontEarAccessory && draw(options, 1 /* Front */) && draw(options, 256 /* CloseEar */)) {
@@ -553,10 +553,16 @@ function drawLeg(batch, x, y, frame, leg, hoof, sock, legSet, sockSet, hoofSet, 
         drawSet(batch, at(hoofSprites, frame), hoofSet, x, y, color);
     }
 }
-function getEyeFrame(base, expression, anim, blinkFrame) {
-    if (anim !== -1)
-        return anim;
+function getEyeFrame(base, expression, anim, animationProperties, blinkFrame) {
     const frame = expression === -1 ? base : expression;
+    if (anim !== -1) {
+        if (utils_1.hasFlag(animationProperties, 1 /* DontIncreaseEyeOpenness */)) {
+            if (interfaces_1.getEyeOpenness(anim) > interfaces_1.getEyeOpenness(frame)) {
+                return frame;
+            }
+        }
+        return anim;
+    }
     const blink = ponyUtils_1.blinkFrames[frame];
     if (blinkFrame > 1 && blink) {
         const frameOffset = 6 - blinkFrame;
@@ -565,6 +571,24 @@ function getEyeFrame(base, expression, anim, blinkFrame) {
         }
     }
     return frame;
+}
+function getMouthFrame(holding, expression, headFrameMuzzle, currentMuzzle, properties) {
+    if (holding) {
+        return 0 /* Smile */;
+    }
+    let applyMuzzle = currentMuzzle;
+    if (expression) {
+        applyMuzzle = expression.muzzle;
+    }
+    if (headFrameMuzzle !== -1) {
+        if (applyMuzzle && utils_1.hasFlag(properties, 2 /* DontDecreaseMouthOpenness */)) {
+            if (interfaces_1.getMuzzleOpenness(headFrameMuzzle) < interfaces_1.getMuzzleOpenness(applyMuzzle)) {
+                return applyMuzzle;
+            }
+        }
+        return headFrameMuzzle;
+    }
+    return applyMuzzle;
 }
 function drawEye(batch, eye, iris, info, palette, eyePalette, x, y) {
     if (eye !== undefined) {

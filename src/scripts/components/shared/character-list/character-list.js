@@ -8,40 +8,6 @@ const data_1 = require("../../../client/data");
 const model_1 = require("../../services/model");
 const constants_1 = require("../../../common/constants");
 const icons_1 = require("../../../client/icons");
-function getSortTag(pony) {
-    const match = pony.desc && /(?:^| )@(top|end|\d+)(?:$| )/.exec(pony.desc);
-    return match && match[1];
-}
-function sortTagToNumber(tag) {
-    if (tag === 'top') {
-        return -1;
-    }
-    else if (tag === 'end') {
-        return 999999999;
-    }
-    else {
-        return +tag;
-    }
-}
-function fallbackComparePonies(a, b) {
-    return a.name.localeCompare(b.name) || (a.desc || '').localeCompare(b.desc || '');
-}
-function comparePonies(a, b) {
-    const aTag = getSortTag(a);
-    const bTag = getSortTag(b);
-    if (aTag && bTag) {
-        return (sortTagToNumber(aTag) - sortTagToNumber(bTag)) || fallbackComparePonies(a, b);
-    }
-    else if (aTag) {
-        return aTag === 'end' ? 1 : -1;
-    }
-    else if (bTag) {
-        return bTag === 'end' ? -1 : 1;
-    }
-    else {
-        return fallbackComparePonies(a, b);
-    }
-}
 let CharacterList = class CharacterList {
     constructor(model, zone) {
         this.model = model;
@@ -76,40 +42,12 @@ let CharacterList = class CharacterList {
             setTimeout(() => this.searchInput.nativeElement.focus());
         }
     }
-    keydown(e) {
-        if (e.keyCode === 27 /* ESCAPE */) {
-            if (this.search) {
-                e.preventDefault();
-                e.stopPropagation();
-                this.search = '';
-                this.updatePonies();
-            }
-            else {
-                this.closed();
-            }
-        }
-        else if (e.keyCode === 13 /* ENTER */) {
-            const pony = this.ponies[this.selectedIndex];
-            if (pony) {
-                this.select(pony);
-            }
-            else {
-                this.closed();
-            }
-        }
-        else if (e.keyCode === 38 /* UP */) {
-            this.setSelectedIndex(this.selectedIndex <= 0 ? (this.ponies.length - 1) : (this.selectedIndex - 1));
-        }
-        else if (e.keyCode === 40 /* DOWN */) {
-            this.setSelectedIndex(this.selectedIndex === (this.ponies.length - 1) ? 0 : (this.selectedIndex + 1));
-        }
-    }
     setPreview(pony) {
         this.previewPony = pony;
         this.previewCharacter.emit(this.model.parsePonyObject(pony));
     }
     unsetPreview(pony) {
-        if (this.previewPony && pony && this.previewPony.id === pony.id) {
+        if (this.previewPony === pony) {
             this.previewPony = undefined;
             this.previewCharacter.emit(undefined);
         }
@@ -130,23 +68,23 @@ let CharacterList = class CharacterList {
                 this.ponies = this.model.ponies.filter(pony => {
                     const text = `${pony.name} ${pony.desc || ''}`.toLowerCase();
                     return matchesWords(text, words);
-                }).sort(comparePonies);
+                }).sort((a, b) => this.comparePonies(a, b));
             }
             else {
-                this.ponies = this.model.ponies.slice().sort(comparePonies);
+                this.ponies = this.model.ponies.slice().sort((a, b) => this.comparePonies(a, b));
             }
             this.setSelectedIndex(this.selectedIndex);
             this.previewCharacter.emit(undefined);
         });
+    }
+    comparePonies(a, b) {
+        return a.name.localeCompare(b.name);
     }
     select(pony) {
         this.selectCharacter.emit(pony);
     }
     createNew() {
         this.newCharacter.emit();
-    }
-    closed() {
-        this.zone.run(() => this.close.emit());
     }
     setSelectedIndex(index) {
         this.zone.run(() => {

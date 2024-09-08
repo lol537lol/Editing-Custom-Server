@@ -15,8 +15,9 @@ const psd_utils_1 = require("./psd-utils");
 const sheets_1 = require("../common/sheets");
 const color_1 = require("../common/color");
 const bitUtils_1 = require("../common/bitUtils");
-const head0Indices = [0, 1, 2, 4, 7, 8, 9, 10, 12, 13, 14, 16, 18, 19]; // regular
-const head1Indices = [0, 1, 3, 5, 6, 8, 9, 11, 12, 13, 15, 17, 18, 19]; // clipped
+// face markings
+const head0Indices = [0, 1, 2, 4, 7, 8, 9, 10, 12, 13, 14, 16, 18, 19]; // regular (right facing)
+const head1Indices = [0, 1, 3, 5, 6, 8, 9, 11, 12, 13, 15, 17, 18, 19]; // clipped (left facing, displayed in char creator)
 const MAX_PALETTE_SIZE = 128;
 const { assetsPath } = require('../../../config.json');
 const rootPath = path.join(__dirname, '..', '..', '..');
@@ -231,7 +232,11 @@ function importSprites({ sprites, objects2 }, sheet) {
     }
     const animations = sets.map(({ layerName, name, mask, reverse, maskFile, mirror, mirrorOffsetX }) => {
         const layer = common_1.findLayerSafe(layerName, psd);
-        let color = common_1.getLayerCanvasSafe('color', layer);
+        let color = common_1.getLayerCanvas('color', layer);
+        if (!color) {
+            color = canvas_utils_1.createExtCanvas(psd.width, psd.height, layer.info);
+            console.warn('Layer ' + layer.info + ' is empty');
+        }
         const extraCanvas = sheet.extra ? common_1.getLayerCanvas('extra', layer) : undefined;
         const patterns = common_1.getPatternCanvases(layer);
         if (mask) {
@@ -322,7 +327,7 @@ function importSprites({ sprites, objects2 }, sheet) {
             }
         }
         if (sheet.single) {
-            objects2[`${name}: StaticSprites${hasExtra ? 'Extra' : ''}`] = frames[0];
+            objects2[`${name}: StaticSprites${hasExtra ? 'Extra' : ''}`] = frames[0] || [];
         }
         else {
             objects2[`${name}: AnimatedSprites`] = frames;

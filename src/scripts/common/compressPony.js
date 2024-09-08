@@ -11,7 +11,18 @@ const sprites = require("../generated/sprites");
 const color_1 = require("./color");
 const ponyUtils_1 = require("../client/ponyUtils");
 const constants_1 = require("./constants");
-exports.VERSION = 4;
+exports.VERSION = 5; // previous: 3
+const VERSION_BITS = 6; // max 63
+const COLORS_LENGTH_BITS = 10; // max 1024
+const BOOLEAN_FIELDS_LENGTH_BITS = 4; // max 15
+const NUMBER_FIELDS_LENGTH_BITS = 4; // max 15
+const COLOR_FIELDS_LENGTH_BITS = 4; // max 15
+const SET_FIELDS_LENGTH_BITS = 6; // max 63
+const CM_LENGTH_BITS = 5; // max 31
+const NUMBERS_BITS = 6; // max 63
+const SET_TYPE_BITS = 6; // max 63
+const SET_PATTERN_BITS = 4; // max 15
+const SET_COLORS_BITS = 3; // max 7
 const identity = (x) => x;
 const not = (x) => !x;
 function emptyOrUnlocked(set) {
@@ -124,14 +135,6 @@ const omittableFields = [
     ...numberFields,
     ...colorFields,
 ].filter(f => !!f.omit);
-const VERSION_BITS = 6; // max 63
-const COLORS_LENGTH_BITS = 10; // max 1024
-const BOOLEAN_FIELDS_LENGTH_BITS = 4; // max 15
-const NUMBER_FIELDS_LENGTH_BITS = 4; // max 15
-const COLOR_FIELDS_LENGTH_BITS = 4; // max 15
-const SET_FIELDS_LENGTH_BITS = 6; // max 63
-const CM_LENGTH_BITS = 5; // max 31
-const NUMBERS_BITS = 6; // max 63
 /* istanbul ignore next */
 if (DEVELOPMENT) {
     (function () {
@@ -356,15 +359,12 @@ function postdecompressPony(data, parseColor) {
 }
 exports.postdecompressPony = postdecompressPony;
 // set
-const TYPE_BITS = 5; // max 31
-const PATTERN_BITS = 4; // max 15
-const COLORS_BITS = 3; // max 7
-function writeSet(write, colorBits, customOutlines, set) {
+function writeSet(write, typeBits, colorBits, customOutlines, set) {
     write(set ? 1 : 0, 1);
     if (set) {
-        write(set.type, TYPE_BITS);
-        write(set.pattern, PATTERN_BITS);
-        write(set.colors - 1, COLORS_BITS);
+        write(set.type, typeBits);
+        write(set.pattern, SET_PATTERN_BITS);
+        write(set.colors - 1, SET_COLORS_BITS);
         write(set.fillLocks, set.colors);
         set.fills.forEach(c => write(c, colorBits));
         if (customOutlines) {
@@ -374,12 +374,12 @@ function writeSet(write, colorBits, customOutlines, set) {
     }
 }
 exports.writeSet = writeSet;
-function readSet(read, colorBits, customOutlines) {
+function readSet(read, typeBits, colorBits, customOutlines) {
     const has = read(1);
     if (has) {
-        const type = read(TYPE_BITS);
-        const pattern = read(PATTERN_BITS);
-        const colors = read(COLORS_BITS) + 1;
+        const type = read(typeBits);
+        const pattern = read(SET_PATTERN_BITS);
+        const colors = read(SET_COLORS_BITS) + 1;
         const fillLocks = read(colors);
         const fills = readTimes(read, colors - bitUtils_1.countBits(fillLocks), colorBits);
         const outlineLocks = customOutlines ? read(colors) : 0;
@@ -408,12 +408,13 @@ function readFields(read, lengthBits, readField) {
 function writePony(write, data) {
     const colorBits = Math.max(bitUtils_1.numberToBitCount(data.colors.length), 1);
     const customOutlines = !!data.booleanFields[0];
+    const typeBits = data.version < 5 ? 5 : SET_TYPE_BITS;
     write(data.version, VERSION_BITS);
     writeFields(write, COLORS_LENGTH_BITS, data.colors, x => write(x >> 8, 24));
     writeFields(write, BOOLEAN_FIELDS_LENGTH_BITS, data.booleanFields, x => write(x ? 1 : 0, 1));
     writeFields(write, NUMBER_FIELDS_LENGTH_BITS, data.numberFields, x => write(x, NUMBERS_BITS));
     writeFields(write, COLOR_FIELDS_LENGTH_BITS, data.colorFields, x => write(x, colorBits));
-    writeFields(write, SET_FIELDS_LENGTH_BITS, data.setFields, x => writeSet(write, colorBits, customOutlines, x));
+    writeFields(write, data.version < 4 ? 5 : SET_FIELDS_LENGTH_BITS, data.setFields, x => writeSet(write, typeBits, colorBits, customOutlines, x));
     writeFields(write, CM_LENGTH_BITS, data.cm, x => write(x, colorBits));
 }
 exports.writePony = writePony;
@@ -426,6 +427,7 @@ function readPony(read) {
     if (version > exports.VERSION) {
         throw new Error('Invalid version');
     }
+    const typeBits = version < 5 ? 5 : SET_TYPE_BITS;
     const colors = readFields(read, COLORS_LENGTH_BITS, readColorValue);
     const colorBits = Math.max(bitUtils_1.numberToBitCount(colors.length), 1);
     const readColor = readBits(colorBits);
@@ -433,7 +435,7 @@ function readPony(read) {
     const customOutlines = !!booleanFields[0];
     const numberFields = readFields(read, NUMBER_FIELDS_LENGTH_BITS, readNumber);
     const colorFields = readFields(read, COLOR_FIELDS_LENGTH_BITS, readColor);
-    const setFields = readFields(read, version < 4 ? 5 : SET_FIELDS_LENGTH_BITS, read => readSet(read, colorBits, customOutlines));
+    const setFields = readFields(read, version < 4 ? 5 : SET_FIELDS_LENGTH_BITS, read => readSet(read, typeBits, colorBits, customOutlines));
     const cm = readFields(read, CM_LENGTH_BITS, readColor);
     return { version, colors, booleanFields, numberFields, colorFields, setFields, cm };
 }

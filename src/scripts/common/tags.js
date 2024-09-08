@@ -4,10 +4,15 @@ const accountUtils_1 = require("./accountUtils");
 const colors_1 = require("./colors");
 const placeholder = { id: '', tagClass: '', label: '' };
 const tags = {
-    'mod': Object.assign({}, placeholder, { name: 'moderator', className: 'mod', color: colors_1.MOD_COLOR }),
-    'dev': Object.assign({}, placeholder, { name: 'developer', className: 'dev', color: colors_1.ADMIN_COLOR }),
+    'superadmin': Object.assign({}, placeholder, { name: 'super admin', className: 'dev', color: colors_1.ADMIN_COLOR }),
+    'dev': Object.assign({}, placeholder, { name: 'developer', className: 'dev', color: colors_1.WHITE }),
+    'dev:prog': Object.assign({}, placeholder, { name: 'dev programmer', className: 'dev', color: colors_1.ADMIN_COLOR }),
     'dev:art': Object.assign({}, placeholder, { name: 'dev artist', className: 'dev', color: colors_1.ADMIN_COLOR }),
     'dev:music': Object.assign({}, placeholder, { name: 'dev musician', className: 'dev', color: colors_1.ADMIN_COLOR }),
+    'mod': Object.assign({}, placeholder, { name: 'moderator', className: 'mod', color: colors_1.MOD_COLOR }),
+    'op': Object.assign({}, placeholder, { name: 'operator', className: 'op', color: colors_1.OP_COLOR }),
+    'contributor': Object.assign({}, placeholder, { name: 'contributor', className: 'contr', color: colors_1.CONTRIBUTOR_COLOR }),
+    'npc': Object.assign({}, placeholder, { name: 'npc', className: 'npc', color: colors_1.NPC_COLOR }),
     'sup1': Object.assign({}, placeholder, { name: 'supporter', className: 'sup1', color: colors_1.PATREON_COLOR }),
     'sup2': Object.assign({}, placeholder, { name: 'supporter', className: 'sup2', color: colors_1.WHITE }),
     'sup3': Object.assign({}, placeholder, { name: 'supporter', className: 'sup3', color: colors_1.WHITE }),
@@ -42,6 +47,18 @@ function canUseTag(account, tag) {
     }
     else if (tag === 'dev' || /^dev:/.test(tag)) {
         return accountUtils_1.hasRole(account, 'dev');
+    }
+    else if (tag === 'superadmin') {
+        return accountUtils_1.hasRole(account, 'superadmin');
+    }
+    else if (tag === 'op') {
+        return accountUtils_1.hasRole(account, 'op');
+    }
+    else if (tag === 'contributor') {
+        return accountUtils_1.hasRole(account, 'contr');
+    }
+    else if (tag === 'npc') {
+        return accountUtils_1.hasRole(account, 'npc');
     }
     else {
         return false;

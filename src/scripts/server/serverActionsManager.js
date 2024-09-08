@@ -24,6 +24,8 @@ const liveSettings_1 = require("./liveSettings");
 const security_1 = require("../common/security");
 const characterUtils_1 = require("./characterUtils");
 const friends_1 = require("./services/friends");
+const config_1 = require("./config");
+const utils_1 = require("../common/utils");
 async function refreshSettings(account) {
     const a = await db_1.Account.findOne({ _id: account._id }, 'settings').exec();
     if (a) {
@@ -48,8 +50,8 @@ function createServerActionsFactory(server, settings, getSettings, socketStats) 
     const teleportCounter = new counter_1.CounterService(1 * constants_1.HOUR);
     const statesCounter = new counter_1.CounterService(10 * constants_1.SECOND);
     const logChatMessage = (client, text, type, ignored, target) => logger_1.chat(server, client, text, type, ignored, target);
-    world.season = constants_1.SEASON;
-    world.holiday = constants_1.HOLIDAY;
+    world.season = utils_1.parseSeason(server.season) || utils_1.parseSeason(config_1.config.season) || constants_1.SEASON;
+    world.holiday = utils_1.parseHoliday(server.holiday) || utils_1.parseHoliday(config_1.config.holiday) || constants_1.HOLIDAY;
     try {
         const hidingData = fs.readFileSync(hiding_1.hidingDataPath(server.id), 'utf8');
         if (hidingData) {

@@ -8,7 +8,7 @@ import {
 import { version } from '../../../client/data';
 import { GameService } from '../../services/gameService';
 import { Model } from '../../services/model';
-import { faSpinner, faExclamationCircle, faInfoCircle, faGlobe, faStar, faWrench } from '../../../client/icons';
+import { faSpinner, faExclamationCircle, faInfoCircle, faGlobe, faStar, faWrench, faPlay } from '../../../client/icons';
 import { isBrowserOutdated, hardReload, isAndroidBrowser } from '../../../client/clientUtils';
 import { loadAndInitSpriteSheets } from '../../../client/spriteUtils';
 import { StorageService } from '../../services/storageService';
@@ -37,6 +37,7 @@ export class PlayBox implements OnInit {
 	readonly spinnerIcon = faSpinner;
 	readonly warningIcon = faExclamationCircle;
 	readonly infoIcon = faInfoCircle;
+	readonly playIcon = faPlay;
 	readonly requestBirthdate = REQUEST_DATE_OF_BIRTH;
 	@Output() errorChange = new EventEmitter<string | undefined>();
 	@Input() label?: string;

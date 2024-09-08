@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
 const core_1 = require("@angular/core");
 const adminModel_1 = require("../../../services/adminModel");
+const adminInterfaces_1 = require("../../../../common/adminInterfaces");
 const utils_1 = require("../../../../common/utils");
 const constants_1 = require("../../../../common/constants");
 const frameTime = 1000 / constants_1.SERVER_FPS;
@@ -16,6 +17,7 @@ let AdminReportsPerf = class AdminReportsPerf {
         this.endTime = 0;
         this.listing = [];
         this.timings = [];
+        this.worldPerfStats = adminInterfaces_1.defaultWorldPerfStats();
         this.tooltips = [];
         this.startTimeFrom = 0;
         this.endTimeFrom = 0;
@@ -29,9 +31,21 @@ let AdminReportsPerf = class AdminReportsPerf {
                 }
             }, 100);
         }
+        setInterval(this.update, frameTime, this);
     }
     get servers() {
         return this.model.state.gameServers.map(s => s.id);
+    }
+    disable() {
+        this.loaded = false;
+        this.timings = [];
+        this.listing = [];
+        this.model.setTimingEnabled(this.server, false);
+        this.redraw();
+    }
+    async enable() {
+        this.loaded = true;
+        await this.load(this.server);
     }
     async load(server) {
         this.server = server;
@@ -45,6 +59,17 @@ let AdminReportsPerf = class AdminReportsPerf {
             this.recalcListing();
         }
         this.redraw();
+    }
+    async update(self) {
+        if (self.server) {
+            const result = await self.model.getWorldPerfStats(self.server);
+            if (result) {
+                self.worldPerfStats = result;
+            }
+        }
+        else {
+            self.worldPerfStats = adminInterfaces_1.defaultWorldPerfStats();
+        }
     }
     mouseMove(e) {
         const rect = this.container.nativeElement.getBoundingClientRect();
@@ -87,6 +112,9 @@ let AdminReportsPerf = class AdminReportsPerf {
         }
     }
     resetZoom() {
+        if (!this.timings.length) {
+            return;
+        }
         const firstTime = this.timings[0].time;
         const lastTime = this.timings[this.timings.length - 1].time;
         this.startTime = firstTime - timePadding;
@@ -95,6 +123,9 @@ let AdminReportsPerf = class AdminReportsPerf {
         this.lastZoom = 0;
     }
     fitZoom() {
+        if (!this.timings.length) {
+            return;
+        }
         const firstTime = this.timings[0].time;
         const lastTime = this.timings[this.timings.length - 1].time;
         const totalTime = lastTime - firstTime;
@@ -104,6 +135,9 @@ let AdminReportsPerf = class AdminReportsPerf {
         this.lastZoom = 1;
     }
     fullFrameZoom() {
+        if (!this.timings.length) {
+            return;
+        }
         const firstTime = this.timings[0].time;
         const lastTime = firstTime + frameTime;
         this.startTime = firstTime - 2;
@@ -199,6 +233,9 @@ let AdminReportsPerf = class AdminReportsPerf {
         }
     }
     recalcListing() {
+        if (!this.timings.length) {
+            return;
+        }
         this.listing = [];
         const startStack = [];
         for (const entry of this.timings) {

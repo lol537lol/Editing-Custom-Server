@@ -11,7 +11,6 @@ const model_1 = require("../services/model");
 const data_1 = require("../../client/data");
 const game_1 = require("../../client/game");
 const icons_1 = require("../../client/icons");
-const installService_1 = require("../services/installService");
 const clientUtils_1 = require("../../client/clientUtils");
 const errorReporter_1 = require("../services/errorReporter");
 const constants_1 = require("../../common/constants");
@@ -27,34 +26,35 @@ function popoverConfig() {
 }
 exports.popoverConfig = popoverConfig;
 let App = class App {
-    constructor(modalService, gameService, model, game, router, activatedRoute, installService, errorReporter) {
+    constructor(modalService, gameService, model, game, router, activatedRoute, errorReporter) {
         this.modalService = modalService;
         this.gameService = gameService;
         this.model = model;
         this.game = game;
         this.router = router;
         this.activatedRoute = activatedRoute;
-        this.installService = installService;
         this.errorReporter = errorReporter;
         this.version = data_1.version;
         this.date = new Date();
         this.emailIcon = icons_1.faEnvelope;
         this.twitterIcon = icons_1.faTwitter;
         this.patreonIcon = icons_1.faPatreon;
+        this.discordIcon = icons_1.faDiscord;
         this.cogIcon = icons_1.faCog;
         this.homeIcon = icons_1.faHome;
-        this.helpIcon = icons_1.faGamepad;
+        this.helpIcon = icons_1.faQuestionCircle;
         this.aboutIcon = icons_1.faInfoCircle;
         this.charactersIcon = icons_1.faHorseHead;
         this.contactEmail = data_1.contactEmail;
-        this.patreonLink = data_1.supporterLink;
+        this.contactDiscord = data_1.contactDiscord;
+        this.discordLink = data_1.discordLink;
         this.twitterLink = data_1.twitterLink;
         this.copyright = data_1.copyrightName;
         this.url = location.pathname;
         this.subscriptions = [];
     }
     get canInstall() {
-        return this.installService.canInstall;
+        return false;
     }
     get loading() {
         return this.model.loading;
@@ -216,7 +216,6 @@ App = tslib_1.__decorate([
         game_1.PonyTownGame,
         router_1.Router,
         router_1.ActivatedRoute,
-        installService_1.InstallService,
         errorReporter_1.ErrorReporter])
 ], App);
 exports.App = App;

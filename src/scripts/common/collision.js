@@ -5,15 +5,6 @@ const positionUtils_1 = require("./positionUtils");
 const worldMap_1 = require("./worldMap");
 const constants_1 = require("./constants");
 const entityUtils_1 = require("./entityUtils");
-let isCollidingCount = 0;
-let isCollidingObjectCount = 0;
-function getCollisionStats() {
-    const stats = { isCollidingCount, isCollidingObjectCount };
-    isCollidingCount = 0;
-    isCollidingObjectCount = 0;
-    return stats;
-}
-exports.getCollisionStats = getCollisionStats;
 function isOutsideMap(x, y, map) {
     return x < 0 || y < 0 || x >= map.width || y >= map.height;
 }

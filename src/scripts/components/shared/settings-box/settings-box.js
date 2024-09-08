@@ -27,6 +27,11 @@ let SettingsBox = class SettingsBox {
         this.emptyIcon = icons_1.emptyIcon;
         this.plusIcon = icons_1.faPlus;
         this.minusIcon = icons_1.faMinus;
+        this.usersIcon = icons_1.faUsers;
+        this.unhideIcon = icons_1.faEyeSlash; // Иконка для Unhide Players
+        this.settingsIcon = icons_1.faCog; // Иконка для Settings
+        this.actionsIcon = icons_1.faLaughBeam; // Иконка для Actions
+        this.invitesIcon = icons_1.faCode; // Иконка для управления приглашениями
     }
     get scale() {
         return this.game.scale;

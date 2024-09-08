@@ -16,11 +16,13 @@ let About = class About {
         this.title = document.title;
         this.emotes = emoji_1.emojis;
         this.credits = credits_1.CREDITS.map(toCredit);
+        this.moderators = credits_1.MODERATORS.map(toCredit);
         this.contributors = credits_1.CONTRIBUTORS;
         this.changelog = changelog_1.CHANGELOG;
         this.rewards = constants_1.SUPPORTER_REWARDS_LIST;
-        this.patreonLink = data_1.supporterLink;
+        this.discordLink = data_1.discordLink;
         this.contactEmail = data_1.contactEmail;
+        this.contactDiscord = data_1.contactDiscord;
     }
 };
 About = tslib_1.__decorate([

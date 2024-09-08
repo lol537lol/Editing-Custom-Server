@@ -140,7 +140,7 @@ class PaletteManager {
     initializeTexture(gl, size) {
         try {
             if (!this.paletteTexture) {
-                this.paletteTexture = texture2d_1.createEmptyTexture(gl, size, size, gl.RGBA, gl.UNSIGNED_BYTE);
+                this.paletteTexture = texture2d_1.createEmptyTexture(gl, true, size, size, gl.RGBA, gl.UNSIGNED_BYTE);
             }
             else if (this.paletteTexture.width !== size) {
                 texture2d_1.resizeTexture(gl, this.paletteTexture, size, size);

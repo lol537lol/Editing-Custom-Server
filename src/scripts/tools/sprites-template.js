@@ -15,11 +15,11 @@ const palettes = createPalettes('/*COLORS*/', [
 exports.spriteSheets = [
     {
         src: '/*SPRITE_SHEET*/',
-        data: undefined, texture: undefined, sprites: sprites, palette: false
+        data: undefined, texture: undefined, sprites: sprites, isSingleChannel: false, palette: false
     },
     {
         src: '/*SPRITE_SHEET_PALETTE*/', srcA: '/*SPRITE_SHEET_PALETTE_ALPHA*/',
-        data: undefined, texture: undefined, sprites: sprites2, palette: true
+        data: undefined, texture: undefined, sprites: sprites2, isSingleChannel: false, palette: true
     },
 ];
 exports.normalSpriteSheet = exports.spriteSheets[0];
